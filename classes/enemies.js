@@ -521,17 +521,18 @@ class Enemy09 extends Enemy {
 const enemeyConfigs = [{
   //enemy 1 walks side to side jump on direction change
   strength: 4,
-  key: 'tiles',
-  frame: 120,
+  key: 'enemies',
+  frame: 50,
   fr: 8,
-  frames: { start: 140, end: 145 },
+  frames: { start: 50, end: 55 },
   damage: 5
 },
 {
   //eneny 2 flies side to side
   strength: 4,
-  key: 'tiles',
-  frames: { start: 90, end: 93 },
+  key: 'enemies',
+  frame: 0,
+  frames: { start: 0, end: 3 },
   fr: 4,
   damage: 5
 },
@@ -539,8 +540,9 @@ const enemeyConfigs = [{
 {
   //enemy 3 flies
   strength: 4,
-  key: 'tiles',
-  frames: { start: 100, end: 101 },
+  key: 'enemies',
+  frame: 10,
+  frames: { start: 10, end: 11 },
   fr: 8,
   damage: 5
 },
@@ -548,39 +550,41 @@ const enemeyConfigs = [{
 {
   //Enemy4 attracked to player withing range
   strength: 2,
-  key: 'tiles',
-  frames: { start: 120, end: 123 },
+  key: 'enemies',
+  frame: 30,
+  frames: { start: 30, end: 33 },
   fr: 12,
   damage: 5
 },
 
 {// Enemy 5 attracked to player
   strength: 0,
-  key: 'tiles',
-  frames: { start: 150, end: 153 },
+  key: 'enemies',
+  frame: 60,
+  frames: { start: 60, end: 63 },
   fr: 6,
   damage: 5
 },
 
-{// wall crawler
+{//6 wall crawler
   strength: 0,
-  key: 'tiles',
+  key: 'enemies',
   fr: 6,
-  frame: 94,
-  frames: { start: 94, end: 95 },
-  damage: 5
-},
-
-{
-  strength: 0,
-  key: 'enemy07',
-  fr: 6,
+  frame: 4,
+  frames: { start: 4, end: 5 },
   damage: 5
 },
 
 {
   strength: 0,
-  key: 'enemy08',
+  key: 'enemies',
+  fr: 6,
+  damage: 5
+},
+
+{
+  strength: 0,
+  key: 'enemies',
   fr: 6,
   damage: 5
 },
@@ -588,7 +592,7 @@ const enemeyConfigs = [{
 {
   //Enemy9 flies down to ground towards payer when near
   strength: 6,
-  key: 'enemy09',
+  key: 'enemies',
   fr: 8,
   damage: 7
 }

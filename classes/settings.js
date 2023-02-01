@@ -37,6 +37,7 @@ let cursors,
   emitter,
   bullets,
   bulletSpeed = 350,
+  upgrades,
   sparks,
   startX,
   startY;
@@ -69,6 +70,15 @@ let switchFrame = 43
 let switchBlockFrame = 33//69
 let questionFrame = 34
 let antennaFrame = 60
+let upgradePowerFrame = 103
+let upgradeBeamFrame = 104
+let upgradeBombFrame = 105
+let upgradeLongFrame = 106
+let upgradeBodyFrame = 107
+let upgrade3Frame = 108
+let upgradeTeleportFrame = 109
+let upgradeTopFrame = 91
+let upgradeTopAnim = [91, 92, 93, 94]
 
 function loadFont(name, url) {
   var newFont = new FontFace(name, `url(${url})`);
@@ -81,13 +91,16 @@ function loadFont(name, url) {
 loadFont("PixelFont", "assets/fonts/mago1.ttf");
 loadFont("PixelFontWide", "assets/fonts/mago3.ttf");
 
+let playerData
 
-let playerData = {}
-playerData.health = 100
-playerData.roomsCompleted = []
-playerData.currentRoom = 0
-playerData.range = 75
-playerData.hasGun = true
+let playerDataDefault = {}
+playerDataDefault.health = 100
+playerDataDefault.roomsCompleted = []
+playerDataDefault.currentRoom = 0
+playerDataDefault.range = 75
+playerDataDefault.hasGun = false
+playerDataDefault.hasBomb = false
+
 
 let gridCols = 6
 let gridRows = 8
