@@ -42,6 +42,7 @@ let cursors,
   startX,
   startY;
 
+let currentWorld = 0
 let currentRoom = 0
 let enteredFrom = 'none'
 
@@ -59,6 +60,7 @@ let lavaBallFrame = 15
 let sparkFrame = 17
 let hPlatformFrame = 21
 let beamFrame = 22
+let hBeamFrame = 96
 let bombBlockFrame = 6
 let keyFrame = 24
 let controlFrame = 28
@@ -76,9 +78,31 @@ let upgradeBombFrame = 105
 let upgradeLongFrame = 106
 let upgradeBodyFrame = 107
 let upgrade3Frame = 108
+
 let upgradeTeleportFrame = 109
 let upgradeTopFrame = 91
 let upgradeTopAnim = [91, 92, 93, 94]
+
+
+
+let acceleration = 600
+let maxVelocityX = 200
+let superMaxVelocityX = 300
+let jumpVelocity = -700
+let jumping = false;
+wasStanding = false,
+  edgeTimer = 0;
+
+var playerStandBodyX = 26
+var playerStandBodyY = 34
+var playerStandBodyXOffset = 3
+var playerStandBodyYOffset = -2
+var playerRollBodyX = 26
+var playerRollBodyY = 20
+var playerRollBodyXOffset = 3
+var playerRollBodyYOffset = 12
+
+
 
 function loadFont(name, url) {
   var newFont = new FontFace(name, `url(${url})`);
@@ -96,10 +120,18 @@ let playerData
 let playerDataDefault = {}
 playerDataDefault.health = 100
 playerDataDefault.roomsCompleted = []
+playerDataDefault.worldsCompleted = []
 playerDataDefault.currentRoom = 0
+playerDataDefault.currentWorld = 0
 playerDataDefault.range = 75
+playerDataDefault.damage = 1
 playerDataDefault.hasGun = false
+playerDataDefault.hasLong = false
 playerDataDefault.hasBomb = false
+playerDataDefault.hasBody = false
+playerDataDefault.has3Way = false
+
+
 
 
 let gridCols = 6
@@ -108,56 +140,67 @@ let gridRows = 8
 //var ind = (gridCols * y) + x
 //var mapColumn = value % gridCols
 //var mapRow = Math.floor(value / gridCols)
-let rooms = [
+let worlds = [
   {
     id: 0,
-    roomKey: 'level0', //json
-    leftID: null,//room id connected to room
-    rightID: 1,
-    upID: null,
-    downID: null,
-  },
-  {
-    id: 1,
-    roomKey: 'level1', //json
-    leftID: 0,//room id connected to room
-    rightID: 2,
-    upID: null,
-    downID: 4,
-  },
-  {
-    id: 2,
-    roomKey: 'level2', //json
-    leftID: 1,//room id connected to room
-    rightID: null,
-    upID: null,
-    downID: 5,
-  },
-  {
-    id: 3,
-    roomKey: 'level3', //json
-    leftID: null,//room id connected to room
-    rightID: 4,
-    upID: null,
-    downID: null,
-  },
-  {
-    id: 4,
-    roomKey: 'level4', //json
-    leftID: 3,//room id connected to room
-    rightID: 5,
-    upID: 1,
-    downID: null,
-  },
-  {
-    id: 5,
-    roomKey: 'level5', //json
-    leftID: 4,//room id connected to room
-    rightID: null,
-    upID: 4,
-    downID: null,
+    name: 'The Start'
   }
 ]
+
+let rooms =
+
+{
+  0:
+    [{
+      id: 0,
+      roomKey: 'level0', //json
+      leftID: null,//room id connected to room
+      rightID: 1,
+      upID: null,
+      downID: null,
+    },
+    {
+      id: 1,
+      roomKey: 'level1', //json
+      leftID: 0,//room id connected to room
+      rightID: 2,
+      upID: null,
+      downID: 4,
+    },
+    {
+      id: 2,
+      roomKey: 'level2', //json
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: 5,
+    },
+    {
+      id: 3,
+      roomKey: 'level3', //json
+      leftID: null,//room id connected to room
+      rightID: 4,
+      upID: null,
+      downID: null,
+    },
+    {
+      id: 4,
+      roomKey: 'level4', //json
+      leftID: 3,//room id connected to room
+      rightID: 5,
+      upID: 1,
+      downID: null,
+    },
+    {
+      id: 5,
+      roomKey: 'level5', //json
+      leftID: 4,//room id connected to room
+      rightID: null,
+      upID: 4,
+      downID: null,
+    }]
+}
+
 
 let gameSettings;
 var defaultValues = {

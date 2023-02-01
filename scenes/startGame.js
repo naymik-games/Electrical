@@ -55,6 +55,8 @@ class startGame extends Phaser.Scene {
   }
   clickHandler() {
     currentRoom = playerData.currentRoom
+    currentWorld = playerData.currentWorld
+
     var t = this.tweens.add({
       targets: this.tempPlayer,
       x: game.config.width + 96,
@@ -62,6 +64,8 @@ class startGame extends Phaser.Scene {
     })
     // this.tempPlayer.amims.stop('player-idle')
     this.tempPlayer.anims.play("player-run", true).once('animationcomplete', function () {
+      console.log('current room ' + currentRoom + ', current world ' + currentWorld)
+
       this.scene.start('playGame');
       this.scene.launch('UI');
     }, this)

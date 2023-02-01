@@ -1,19 +1,4 @@
-let acceleration = 600
-let maxVelocityX = 200
-let superMaxVelocityX = 300
-let jumpVelocity = -700
-let jumping = false;
-wasStanding = false,
-  edgeTimer = 0;
 
-var playerStandBodyX = 26
-var playerStandBodyY = 34
-var playerStandBodyXOffset = 3
-var playerStandBodyYOffset = -2
-var playerRollBodyX = 26
-var playerRollBodyY = 20
-var playerRollBodyXOffset = 3
-var playerRollBodyYOffset = 12
 
 class Player {
   constructor(scene, x, y) {
@@ -236,7 +221,7 @@ class Player {
       //set player as invulnerable
       this.invulnerable = true;
 
-      this.scene.addScore(damage * 1)//playerData.damageMultiplier
+      this.scene.addScore(damage * playerData.damage)//playerData.damageMultiplier
       //if hearts is 0 or less you're dead as you are out of lives
       if (playerData.health <= 0) {
         //remove physics from player

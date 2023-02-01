@@ -8,14 +8,16 @@ class UI extends Phaser.Scene {
     super("UI");
   }
   preload() {
-    var url;
-
-    url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexvirtualjoystickplugin.min.js';
-    this.load.plugin('rexvirtualjoystickplugin', url, true);
+    /*  var url;
+ 
+     url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexvirtualjoystickplugin.min.js';
+     this.load.plugin('rexvirtualjoystickplugin', url, true); */
 
 
   }
   create() {
+
+
     this.Main = this.scene.get('playGame');
     this.header = this.add.image(game.config.width / 2, 0, 'blank').setOrigin(.5, 0).setTint(0x000000).setAlpha(.8);//0x262626
     this.header.displayWidth = game.config.width;
@@ -34,14 +36,16 @@ class UI extends Phaser.Scene {
     progressBar.fillRect(55, 35, 140 * value, 15)
     this.progressBox = this.add.image(50, 25, 'progressBox').setScale(1).setOrigin(0)
 
-    this.eText = this.add.text(game.config.width - 100, 35, rooms[currentRoom].id, { fontFamily: 'PixelFont', fontSize: '50px', color: '#fafafa', align: 'left' }).setOrigin(.5).setInteractive()//C6EFD8
+    this.eText = this.add.text(game.config.width - 100, 35, rooms[worlds[currentWorld].id][currentRoom].id, { fontFamily: 'PixelFont', fontSize: '50px', color: '#fafafa', align: 'left' }).setOrigin(.5).setInteractive()//C6EFD8
 
     this.keyIcon = this.add.image(game.config.width - 48, 45, 'tiles', keyFrame).setScale(1.5).setAlpha(0)
     if (roomComplete()) {
       this.keyIcon.setAlpha(1)
     }
     this.Main.events.on('roomstatus', function () {
-      this.eText.setText(rooms[currentRoom].id)
+      console.log('current room ' + currentRoom + ', current world ' + currentWorld)
+
+      this.eText.setText(rooms[worlds[currentWorld].id][currentRoom].id)
       if (roomComplete()) {
         this.keyIcon.setAlpha(1)
       } else {
@@ -110,7 +114,7 @@ class UI extends Phaser.Scene {
 
     console.log("joystick", this.joystick);
  */
-
+    this.makeMenu()
   }
 
   update(timestamp, delta) {
@@ -169,6 +173,70 @@ class UI extends Phaser.Scene {
       player.dpad.isUp = false
     }
   }
+  toggleMenu() {
+
+    if (this.menuGroup.y == 0) {
+      this.scene.pause('playGame')
+
+      // console.log('Open menu')
+      var menuTween = this.tweens.add({
+        targets: this.menuGroup,
+        y: -270,
+        duration: 500,
+        ease: 'Bounce'
+      })
+      /* var menuTween = this.tweens.add({
+        targets: this.tallyContainer,
+        y: 0,
+        duration: 500,
+        ease: 'Bounce'
+      }) */
+
+    }
+    if (this.menuGroup.y == -270) {
+
+      this.scene.resume('playGame')
+      // console.log('close menu')dd
+      var menuTween = this.tweens.add({
+        targets: this.menuGroup,
+        y: 0,
+        duration: 500,
+        ease: 'Bounce'
+      })
+      /*  var menuTween = this.tweens.add({
+         targets: this.tallyContainer,
+         y: -1640,
+         duration: 500,
+         ease: 'Bounce'
+       }) */
+    }
+  }
+  makeMenu() {
+    ////////menu
+    this.menuGroup = this.add.container().setDepth(5);
+    var menuBG = this.add.image(game.config.width / 2, game.config.height - 85, 'blank').setOrigin(.5, 0).setTint(0x333333).setAlpha(.8)
+    menuBG.displayWidth = 300;
+    menuBG.displayHeight = 600
+    this.menuGroup.add(menuBG)
+    var menuButton = this.add.image(game.config.width / 2, game.config.height - 40, "menu").setInteractive().setDepth(3);
+    menuButton.on('pointerdown', this.toggleMenu, this)
+    menuButton.setOrigin(0.5);
+    this.menuGroup.add(menuButton);
+    var homeButton = this.add.bitmapText(game.config.width / 2, game.config.height + 50, 'topaz', 'HOME', 50).setOrigin(.5).setTint(0xffffff).setAlpha(1).setInteractive();
+    homeButton.on('pointerdown', function () {
+
+      this.scene.stop()
+      this.scene.stop('playGame')
+      this.scene.start('startGame')
+
+    }, this)
+    this.menuGroup.add(homeButton);
+
+    ////////end menu
+  }
+
+
+
 
 }
 

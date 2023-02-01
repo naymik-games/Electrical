@@ -35,19 +35,19 @@ class playGame extends Phaser.Scene {
     super("playGame");
   }
   preload() {
-    console.log(rooms[currentRoom].roomKey)
-    this.load.tilemapTiledJSON(rooms[currentRoom].roomKey, 'assets/sprites/' + rooms[currentRoom].roomKey + '.json')
+    console.log('current room ' + currentRoom + ', current world ' + currentWorld)
+    console.log(rooms[worlds[currentWorld].id][currentRoom].roomKey)
+    this.load.tilemapTiledJSON(rooms[worlds[currentWorld].id][currentRoom].roomKey, 'assets/sprites/' + rooms[worlds[currentWorld].id][currentRoom].roomKey + '.json')
 
   }
   create() {
 
     this.saveGame()
     this.cameras.main.setBackgroundColor(0x161616);
-    console.log(rooms[currentRoom].roomKey)
 
     //this.cameras.main.setBackgroundColor(0xAFB0B3);
 
-    this.map = this.make.tilemap({ key: rooms[currentRoom].roomKey });
+    this.map = this.make.tilemap({ key: rooms[worlds[currentWorld].id][currentRoom].roomKey });
     this.tiles = this.map.addTilesetImage('tiles', 'tiles');
     const layerDec = this.map.createLayer('layer1', this.tiles);
     //this.createAntennas(layerDec)
@@ -56,7 +56,7 @@ class playGame extends Phaser.Scene {
 
 
     // const layer2 = map2.createLayer(0, tiles, 0, 0);
-    layer.setCollisionByExclusion([-1, switchFrame, upgradeTopFrame, upgradePowerFrame, upgradeBeamFrame, upgradeBombFrame, upgradeLongFrame, upgradeBodyFrame, upgrade3Frame, upgradeTeleportFrame, switchBlockFrame, questionFrame, oneWayUpFrame, doorLFrame, doorRFrame, doorUFrame, doorDFrame, keyFrame, controlFrame, sparkFrame, oneWayDownFrame, lavaFrame, oneWayLeftFrame, oneWayRightFrame, collapseFrame, hPlatformFrame, launchUpFrameUp, launchUpFrameRight, launchUpFrameLeft, beamFrame, bombBlockFrame]);
+    layer.setCollisionByExclusion([-1, switchFrame, upgradeTopFrame, hBeamFrame, upgradePowerFrame, upgradeBeamFrame, upgradeBombFrame, upgradeLongFrame, upgradeBodyFrame, upgrade3Frame, upgradeTeleportFrame, switchBlockFrame, questionFrame, oneWayUpFrame, doorLFrame, doorRFrame, doorUFrame, doorDFrame, keyFrame, controlFrame, sparkFrame, oneWayDownFrame, lavaFrame, oneWayLeftFrame, oneWayRightFrame, collapseFrame, hPlatformFrame, launchUpFrameUp, launchUpFrameRight, launchUpFrameLeft, beamFrame, bombBlockFrame]);
 
 
     this.createOneWay(layer)
@@ -671,7 +671,7 @@ class playGame extends Phaser.Scene {
     if (gameObject.kind == 'beam' && !playerData.hasGun) {
 
       if (Math.abs(player.sprite.x - gameObject.x) < 5 && !this.collectUpgrade) {
-        this.collectUpgrade = true
+
         gameObject.body.destroy()
         player.sprite.setVelocityX(0);
         player.sprite.setVelocityY(0);
@@ -681,6 +681,7 @@ class playGame extends Phaser.Scene {
         this.scene.pause()
         setTimeout(() => {
           this.scene.resume();
+          this.collectUpgrade = false
         }, 1500);
       }
 
@@ -696,6 +697,59 @@ class playGame extends Phaser.Scene {
         this.scene.pause()
         setTimeout(() => {
           this.scene.resume();
+          this.collectUpgrade = false
+        }, 1500);
+      }
+    } else if (gameObject.kind == 'long' && !playerData.hasLong) {
+      if (Math.abs(player.sprite.x - gameObject.x) < 5 && !this.collectUpgrade) {
+        this.collectUpgrade = true
+        gameObject.body.destroy()
+        player.sprite.setVelocityX(0);
+        player.sprite.setVelocityY(0);
+        player.sprite.x = gameObject.x
+        playerData.hasLong = true
+        playerData.range = 300
+        gameObject.setFrame(101)
+        this.scene.pause()
+        setTimeout(() => {
+          this.scene.resume();
+          this.collectUpgrade = false
+        }, 1500);
+      }
+    } else if (gameObject.kind == 'body' && !playerData.hasBody) {
+      if (Math.abs(player.sprite.x - gameObject.x) < 5 && !this.collectUpgrade) {
+        this.collectUpgrade = true
+        gameObject.body.destroy()
+        player.sprite.setVelocityX(0);
+        player.sprite.setVelocityY(0);
+        player.sprite.x = gameObject.x
+        playerData.hasBody = true
+        playerData.damage = .5
+
+        gameObject.setFrame(101)
+        this.scene.pause()
+        setTimeout(() => {
+          this.scene.resume();
+          this.collectUpgrade = false
+          player.sprite.setTint(0xBABAA6)
+        }, 1500);
+      }
+    } else if (gameObject.kind == 'power') {
+      if (Math.abs(player.sprite.x - gameObject.x) < 5 && !this.collectUpgrade) {
+        this.collectUpgrade = true
+        gameObject.body.destroy()
+        player.sprite.setVelocityX(0);
+        player.sprite.setVelocityY(0);
+        player.sprite.x = gameObject.x
+
+
+
+        gameObject.setFrame(101)
+        this.scene.pause()
+        setTimeout(() => {
+          this.scene.resume();
+          this.collectUpgrade = false
+          this.addScore(100)
         }, 1500);
       }
     }
@@ -821,10 +875,10 @@ class playGame extends Phaser.Scene {
     if (door.open) {
 
       if (door.direction == 'right') {
-        if (rooms[currentRoom].rightID == null) { return }
+        if (rooms[worlds[currentWorld].id][currentRoom].rightID == null) { return }
         player.disableBody(false, false);
         this.input.enabled = false
-        currentRoom = rooms[currentRoom].rightID
+        currentRoom = rooms[worlds[currentWorld].id][currentRoom].rightID
         enteredFrom = 'right'
         console.log('current room ' + currentRoom + ', entered from ' + enteredFrom + ', door direction ' + door.direction)
         setTimeout(() => {
@@ -832,33 +886,33 @@ class playGame extends Phaser.Scene {
         }, 150);
 
       } else if (door.direction == 'up') {
-        if (rooms[currentRoom].upID == null) { return }
+        if (rooms[worlds[currentWorld].id][currentRoom].upID == null) { return }
         console.log('going up')
         player.disableBody(false, false);
         this.input.enabled = false
-        currentRoom = rooms[currentRoom].upID
+        currentRoom = rooms[worlds[currentWorld].id][currentRoom].upID
         enteredFrom = 'up'
         setTimeout(() => {
           this.scene.restart();
         }, 150);
 
       } else if (door.direction == 'left') {
-        if (rooms[currentRoom].leftID == null) { return }
+        if (rooms[worlds[currentWorld].id][currentRoom].leftID == null) { return }
         console.log('going left 1')
         player.disableBody(false, false);
         this.input.enabled = false
-        currentRoom = rooms[currentRoom].leftID
+        currentRoom = rooms[worlds[currentWorld].id][currentRoom].leftID
         enteredFrom = 'left'
         setTimeout(() => {
           this.scene.restart();
         }, 150);
 
       } else if (door.direction == 'down') {
-        if (rooms[currentRoom].downID == null) { return }
+        if (rooms[worlds[currentWorld].id][currentRoom].downID == null) { return }
         console.log('going down')
         player.disableBody(false, false);
         this.input.enabled = false
-        currentRoom = rooms[currentRoom].downID
+        currentRoom = rooms[worlds[currentWorld].id][currentRoom].downID
         enteredFrom = 'down'
         setTimeout(() => {
           this.scene.restart();
@@ -1163,13 +1217,32 @@ class playGame extends Phaser.Scene {
       sprites[i].setDepth(3)
       sprites[i].damage = 6
       beams.add(sprites[i])
-
+      sprites[i].body.setSize(8, 32).setOffset(12, 0)
+      sprites[i].anims.play('layer-beam', true);
     }
     //sparks.playAnimation('layer-spark')
-    Phaser.Actions.Call(beams.getChildren(), child => {
-      child.body.setSize(8, 32).setOffset(12, 0)
-      child.anims.play('layer-beam', true);
+    /*     Phaser.Actions.Call(beams.getChildren(), child => {
+    
+        }); */
+    ////////////////////////////////////////
+    this.anims.create({
+      key: "layer-beam-h",
+      frames: this.anims.generateFrameNumbers('tiles', { frames: [96, 97, 98] }),
+      frameRate: 8,
+      repeat: -1
     });
+
+    var sprites = this.map.createFromTiles(hBeamFrame, 0, { key: 'tiles', frame: hBeamFrame }, null, null, layer)
+    for (var i = 0; i < sprites.length; i++) {
+      sprites[i].x += (this.map.tileWidth / 2)
+      sprites[i].y += (this.map.tileHeight / 2)
+      sprites[i].setDepth(3)
+      sprites[i].damage = 6
+      beams.add(sprites[i])
+      sprites[i].body.setSize(32, 8).setOffset(0, 12)
+      sprites[i].anims.play('layer-beam-h', true);
+    }
+
   }
   createLavaLauncher(layer) {
     this.anims.create({
@@ -1308,6 +1381,68 @@ class playGame extends Phaser.Scene {
 
       }
     }
+    ///////////////////////////////////////
+    if (!playerData.hasLong) {
+      var sprites = this.map.createFromTiles(upgradeLongFrame, 0, { key: 'tiles', frame: upgradeLongFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].kind = 'long'
+        upgrades.add(sprites[i])
+      }
+    } else if (playerData.hasLong) {
+      var sprites = this.map.createFromTiles(upgradeLongFrame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+
+      }
+    }
+    ///////////////////////////////////////
+    if (!playerData.hasbody) {
+      var sprites = this.map.createFromTiles(upgradeBodyFrame, 0, { key: 'tiles', frame: upgradeBodyFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].kind = 'body'
+        upgrades.add(sprites[i])
+      }
+    } else if (playerData.hasbody) {
+      var sprites = this.map.createFromTiles(upgradeBodyFrame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+
+      }
+    }
+    ///////////////////////////////////////
+    if (!playerData.has3Way) {
+      var sprites = this.map.createFromTiles(upgrade3Frame, 0, { key: 'tiles', frame: upgrade3Frame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].kind = '3way'
+        upgrades.add(sprites[i])
+      }
+    } else if (playerData.has3Way) {
+      var sprites = this.map.createFromTiles(upgrade3Frame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+
+      }
+    }
+
+    ///////////////////////////////////////
+
+    var sprites = this.map.createFromTiles(upgradePowerFrame, 0, { key: 'tiles', frame: upgradePowerFrame }, null, null, layer)
+    for (var i = 0; i < sprites.length; i++) {
+      sprites[i].x += (this.map.tileWidth / 2)
+      sprites[i].y += (this.map.tileHeight / 2)
+      sprites[i].kind = 'power'
+      upgrades.add(sprites[i])
+    }
+
     ///////////////////////////////////////
 
   }
@@ -1464,6 +1599,7 @@ class playGame extends Phaser.Scene {
   }
   saveGame() {
     playerData.currentRoom = currentRoom
+    playerData.currentWorld = currentWorld
     localStorage.setItem('ElectricalSave', JSON.stringify(playerData));
   }
   /////////////////////////////////////////////////////////////

@@ -104,6 +104,7 @@ class preloadGame extends Phaser.Scene {
       frameWidth: 48,
       frameHeight: 48
     });
+    this.load.image('menu', 'assets/sprites/menu.png');
     this.load.image('blank', 'assets/sprites/blank.png');
     this.load.image('progressBox', 'assets/sprites/progressBox.png');
     this.load.image("touch-slider", "assets/sprites/touch-slider.png");
