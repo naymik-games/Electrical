@@ -87,6 +87,7 @@ class playGame extends Phaser.Scene {
     this.cameras.main.setViewport(0, 100, game.config.width, game.config.height);
     // this.cameras.main.setDeadzone(game.config.width / 8, game.config.height / 4);
     this.createPlayer()
+    player.sprite.setTint(0xBABAA6)
     //this.cameras.main.startFollow(player.sprite);
     this.cameras.main.startFollow(player.sprite, true, 0.05);
 
@@ -94,6 +95,12 @@ class playGame extends Phaser.Scene {
     bombs = this.add.group({
       defaultKey: 'bomb',
       maxSize: 30
+    });
+    bullets = this.physics.add.group({
+      defaultKey: 'bullet',
+      maxSize: 5,
+      allowGravity: false,
+      immovable: true
     });
     powerupGroup = this.physics.add.group({
       defaultKey: 'tiles',
@@ -182,6 +189,7 @@ class playGame extends Phaser.Scene {
     this.physics.add.collider(enemies, switchBlocks);
 
     this.physics.world.addCollider(lavaBall, layer, this.lavaHitLayer, null, this);
+    this.physics.world.addCollider(bullets, layer, this.bulletHitLayer, null, this);
 
     player.sprite.anims.play("player-idle", true);
 
@@ -350,6 +358,9 @@ class playGame extends Phaser.Scene {
             if (player.roll && !player.bombSet) {
               player.bombSet = true
               player.setBomb()
+            } else if (playerData.hasGun && player.canShoot && !player.roll) {
+              player.fire = true
+              player.shoot()
             }
           }
         }
@@ -467,6 +478,9 @@ class playGame extends Phaser.Scene {
   }
   hitEnemy_(playersprite, enemy) {
     player.playerHit(-10)
+  }
+  bulletHitLayer(bullet, layer) {
+    player.killBullet(bullet)
   }
   hitEnemy(playersprite, baddie) {
     //if the collision is on the baddies head

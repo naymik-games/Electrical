@@ -103,6 +103,7 @@ class preloadGame extends Phaser.Scene {
     this.load.image("touch-slider", "assets/sprites/touch-slider.png");
     this.load.image("touch-knob", "assets/sprites/touch-knob.png");
     this.load.image("bomb", "assets/sprites/bomb.png");
+    this.load.image("bullet", "assets/sprites/bullet.png");
   }
   create() {
     this.scene.start("startGame");

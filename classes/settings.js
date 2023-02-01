@@ -35,6 +35,8 @@ let cursors,
   powerupGroup,
   antennas,
   emitter,
+  bullets,
+  bulletSpeed = 350,
   sparks,
   startX,
   startY;
@@ -84,6 +86,8 @@ let playerData = {}
 playerData.health = 100
 playerData.roomsCompleted = []
 playerData.currentRoom = 0
+playerData.range = 75
+playerData.hasGun = true
 
 let gridCols = 6
 let gridRows = 8

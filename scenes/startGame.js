@@ -25,6 +25,8 @@ class startGame extends Phaser.Scene {
 
 
 
+
+
   }
   clickHandler() {
 

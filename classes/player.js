@@ -75,6 +75,7 @@ class Player {
     this.launched = false
     this.invulnerable = false;
     this.invincible = false
+    this.canShoot = true
     this.hasKey = false
     this.keys = []
     this.controlsActivated = 0
@@ -92,7 +93,7 @@ class Player {
   }
   update() {
     var standing = this.sprite.body.blocked.down || this.sprite.body.touching.down;
-
+    bullets.getChildren().forEach(this.updateBullet, this);
 
     //animation
     if (standing) {
@@ -176,6 +177,57 @@ class Player {
     else {
       this.sprite.setAccelerationX(acceleration / 2.5);
     }
+  }
+  updateBullet(bullet) {
+    bullet.state -= bullet.body.newVelocity.length();
+
+    if (bullet.state <= 0) {
+      //bullet.disableBody(true, true);
+      this.killBullet(bullet)
+    }
+  }
+  shoot() {
+
+    if (bullets.maxSize - bullets.getTotalUsed() > 0) {
+      if (this.canShoot) {
+        this.canShoot = false
+        var bullet = bullets.get().setActive(true);
+
+        console.log('shoot')
+        // Place the explosion on the screen, and play the animation.
+        bullet.setOrigin(0.5, 0.5).setScale(1).setDepth(3).setVisible(true);
+        //bullet.setSize(8, 8).setOffset(8, 4)
+        /* if (this.missleActive) {
+
+          bullet.setTexture('missle')
+          playerData.missleCount--
+          this.scene.updateMissle()
+        } else {
+          bullet.setTexture('bullet')
+        } */
+
+        bullet.x = this.sprite.x;
+        bullet.y = this.sprite.y - 0;
+        bullet.state = playerData.range
+        //bullet.play('bullet-fired')
+        if (this.sprite.flipX) {
+          bullet.setFlipX(true);
+          bullet.body.setVelocityX(-bulletSpeed)
+        } else {
+          bullet.setFlipX(false);
+          bullet.body.setVelocityX(bulletSpeed)
+        }
+        var timer = this.scene.time.delayedCall(150, function () {
+          this.canShoot = true
+        }, null, this);
+        // var timer2 = this.scene.time.delayedCall(playerData.range, this.killBullet, [bullet], this);
+      }
+
+    }
+  }
+  killBullet(bullet) {
+    bullets.killAndHide(bullet)
+    bullet.setPosition(-50, -50)
   }
   playerHit(damage) {
 
