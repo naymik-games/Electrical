@@ -44,7 +44,7 @@ class startGame extends Phaser.Scene {
     deleteGame.setInteractive();
     deleteGame.on('pointerdown', function () {
       localStorage.removeItem('PTSave');
-      localStorage.setItem('PTSave', JSON.stringify(playerDataDefault));
+      localStorage.setItem('ElectricalSave', JSON.stringify(playerDataDefault));
       playerData = playerDataDefault;
       deleteGame.setText('Deleted')
       this.startTime.setText('Start Game')

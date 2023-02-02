@@ -62,7 +62,7 @@ class UI extends Phaser.Scene {
       }) */
     }, this);
     this.Main.events.on('complete', function () {
-      playerData.roomsCompleted.push(currentRoom)
+      playerData.roomsCompleted[currentWorld].push(currentRoom)
       this.keyIcon.setAlpha(1)
       var t = this.tweens.add({
         targets: this.keyIcon,
@@ -98,22 +98,12 @@ class UI extends Phaser.Scene {
 
     }, this);
 
-    /* this.joystick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
-      x: 400,
-      y: 700,
-      radius: 100,
-      forceMin: 16,
-      base: this.add.circle(0, 0, 100, 0x333333),
-      thumb: this.add.circle(0, 0, 50, 0xff0000)
-    })
-     .on("update", this.dumpJoyStickState, this); 
-    this.cursor = this.add.rectangle(400, 650, 50, 50, 0x0000ff);
-    // this.text = this.add.text(50, 500)
-    this.joyStickState();
-    //this.dumpJoyStickState();
 
-    console.log("joystick", this.joystick);
- */
+    /*  var tallyBG = this.add.image(300, 550, 'blank').setTint(0x046307).setAlpha(.8)
+     tallyBG.displayWidth = 550
+     tallyBG.displayHeight = 650
+     this.tallyContainer.add(tallyBG) */
+
     this.makeMenu()
   }
 
@@ -130,70 +120,29 @@ class UI extends Phaser.Scene {
     progressBar.fillStyle(0x00ff00, 1);
     progressBar.fillRect(55, 32.5, 140 * value, 20)
   }
-  dumpJoyStickState() {
-    this.text.setText(
-      toString(this.joystick, [
-        "angle",
-        "down",
-        "enable",
-        "force",
-        "forceX",
-        "forceY",
-        "left",
-        "noKey",
-        "pointerX",
-        "pointerY",
-        "right",
-        "rotation",
-        "up",
-        "visible",
-        "x",
-        "y"
-      ])
-    );
-  }
 
-  joyStickState() {
-    var cursorKeys = this.joystick.createCursorKeys();
-    //console.log(cursorKeys.right.isDown)
-    if (cursorKeys.right.isDown) {
-      player.dpad.isRight = true
-      console.log(this.Main.player.dpad.isRight)
-    } else if (cursorKeys.left.isDown) {
-      player.dpad.isLeft = true
-    } else if (cursorKeys.up.isDown) {
-      player.dpad.isUp = true
-    } else if (cursorKeys.down.isDown) {
-      player.dpad.isDown = true
-    } else {
-      //this.Main.player.dpad.isDown = false
-      //this.Main.player.dpad.isUp = false
-      player.dpad.isRight = false
-      player.dpad.isLeft = false
-      player.dpad.isUp = false
-    }
-  }
   toggleMenu() {
 
     if (this.menuGroup.y == 0) {
+      this.makeMap()
       this.scene.pause('playGame')
 
       // console.log('Open menu')
       var menuTween = this.tweens.add({
         targets: this.menuGroup,
-        y: -270,
+        y: -125,
         duration: 500,
         ease: 'Bounce'
       })
-      /* var menuTween = this.tweens.add({
+      var menuTween = this.tweens.add({
         targets: this.tallyContainer,
         y: 0,
         duration: 500,
         ease: 'Bounce'
-      }) */
+      })
 
     }
-    if (this.menuGroup.y == -270) {
+    if (this.menuGroup.y == -125) {
 
       this.scene.resume('playGame')
       // console.log('close menu')dd
@@ -203,12 +152,16 @@ class UI extends Phaser.Scene {
         duration: 500,
         ease: 'Bounce'
       })
-      /*  var menuTween = this.tweens.add({
-         targets: this.tallyContainer,
-         y: -1640,
-         duration: 500,
-         ease: 'Bounce'
-       }) */
+      var menuTween = this.tweens.add({
+        targets: this.tallyContainer,
+        y: -1640,
+        duration: 500,
+        ease: 'Bounce',
+        onCompleteScope: this,
+        onComplete: function () {
+          this.tallyContainer.destroy()
+        }
+      })
     }
   }
   makeMenu() {
@@ -235,7 +188,56 @@ class UI extends Phaser.Scene {
     ////////end menu
   }
 
+  makeMap() {
+    this.tallyContainer = this.add.container()
 
+    var dotSize = 550 / worlds[currentWorld].cols
+    var xOffset = (game.config.width - (worlds[currentWorld].cols * dotSize)) / 2
+    var yOffset = 150
+
+
+    var tallyBG = this.add.image(300, yOffset - 15, 'blank').setTint(0x046307).setAlpha(1).setOrigin(.5, 0)
+    tallyBG.displayWidth = 600
+    tallyBG.displayHeight = (worlds[currentWorld].cols * dotSize) + 30
+    this.tallyContainer.add(tallyBG)
+
+
+
+
+    for (let y = 0; y < worlds[currentWorld].rows; y++) {
+      for (let x = 0; x < worlds[currentWorld].cols; x++) {
+        let xpos = xOffset + dotSize * x + dotSize / 2;
+        let ypos = yOffset + dotSize * y + dotSize / 2
+        var ind = (worlds[currentWorld].cols * y) + x
+        var grid = this.add.image(xpos, ypos, 'grid', rooms[worlds[currentWorld].id][ind].doorConfig)
+
+        if (playerData.roomsCompleted[currentWorld].indexOf(ind) > -1) {
+          grid.setTint(0xBABAA6)
+        }
+        grid.displayWidth = dotSize
+        grid.displayHeight = dotSize
+
+        this.tallyContainer.add(grid)
+        if (ind != currentRoom) {
+          var num = this.add.text(xpos, ypos - 5, ind, { fontFamily: 'PixelFont', fontSize: (dotSize * .35) + 'px', color: '#fafafa', align: 'center' }).setOrigin(.5)//C6EFD8
+          this.tallyContainer.add(num)
+        }
+
+      }
+    }
+
+    var mapColumn = currentRoom % worlds[currentWorld].cols
+    var mapRow = Math.floor(currentRoom / worlds[currentWorld].cols)
+    let xpos = xOffset + dotSize * mapColumn + dotSize / 2;
+    let ypos = yOffset + dotSize * mapRow + dotSize / 2
+
+
+
+    var play = this.add.sprite(xpos, ypos, 'player', 2)
+    play.displayWidth = dotSize * .35
+    play.scaleY = play.scaleX
+    this.tallyContainer.add(play)
+  }
 
 
 }

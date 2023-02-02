@@ -37,13 +37,13 @@ class playGame extends Phaser.Scene {
   preload() {
     console.log('current room ' + currentRoom + ', current world ' + currentWorld)
     console.log(rooms[worlds[currentWorld].id][currentRoom].roomKey)
-    this.load.tilemapTiledJSON(rooms[worlds[currentWorld].id][currentRoom].roomKey, 'assets/sprites/' + rooms[worlds[currentWorld].id][currentRoom].roomKey + '.json')
+    this.load.tilemapTiledJSON(rooms[worlds[currentWorld].id][currentRoom].roomKey, 'assets/maps/' + rooms[worlds[currentWorld].id][currentRoom].roomKey + '.json')
 
   }
   create() {
 
     this.saveGame()
-    this.cameras.main.setBackgroundColor(0x161616);
+    this.cameras.main.setBackgroundColor(0x161616);//0x161616 0x046307
 
     //this.cameras.main.setBackgroundColor(0xAFB0B3);
 
@@ -485,7 +485,7 @@ class playGame extends Phaser.Scene {
   }
   hitEnemy(playersprite, baddie) {
     //if the collision is on the baddies head
-    if (baddie.body.touching.up || player.invincible) {
+    if ((baddie.body.touching.up || player.invincible) && !player.invulnerable) {
       // set baddie as being hit and remove physics
       baddie.disableBody(false, false);
       //make player jump up in the air a little bit
@@ -966,7 +966,7 @@ class playGame extends Phaser.Scene {
           if (door.direction == 'left') {
             console.log(door.x + ', ' + door.y + 'door d ' + door.direction)
             startX = door.x + this.map.tileWidth * 2
-            startY = door.y
+            startY = door.y - 5
             // player.sprite.setFlipX(true)
           }
         } else if (enteredFrom == 'down') {

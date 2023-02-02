@@ -119,7 +119,7 @@ let playerData
 
 let playerDataDefault = {}
 playerDataDefault.health = 100
-playerDataDefault.roomsCompleted = []
+playerDataDefault.roomsCompleted = [[], [], [], [], [], [], [], [], [], []]
 playerDataDefault.worldsCompleted = []
 playerDataDefault.currentRoom = 0
 playerDataDefault.currentWorld = 0
@@ -143,7 +143,9 @@ let gridRows = 8
 let worlds = [
   {
     id: 0,
-    name: 'The Start'
+    name: 'The Start',
+    cols: 3,
+    rows: 3
   }
 ]
 
@@ -153,52 +155,86 @@ let rooms =
   0:
     [{
       id: 0,
-      roomKey: 'level0', //json
+      roomKey: 'level0-0', //json
       leftID: null,//room id connected to room
       rightID: 1,
       upID: null,
       downID: null,
+      doorConfig: 4
     },
     {
       id: 1,
-      roomKey: 'level1', //json
+      roomKey: 'level0-1', //json
       leftID: 0,//room id connected to room
       rightID: 2,
       upID: null,
-      downID: 4,
+      downID: null,
+      doorConfig: 8
     },
     {
       id: 2,
-      roomKey: 'level2', //json
+      roomKey: 'level0-2', //json
       leftID: 1,//room id connected to room
       rightID: null,
       upID: null,
       downID: 5,
+      doorConfig: 16
     },
     {
       id: 3,
-      roomKey: 'level3', //json
+      roomKey: 'level0-3', //json
       leftID: null,//room id connected to room
-      rightID: 4,
+      rightID: null,
       upID: null,
-      downID: null,
+      downID: 6,
+      doorConfig: 6
     },
     {
       id: 4,
-      roomKey: 'level4', //json
-      leftID: 3,//room id connected to room
+      roomKey: 'level0-4', //json
+      leftID: null,//room id connected to room
       rightID: 5,
-      upID: 1,
-      downID: null,
+      upID: null,
+      downID: 7,
+      doorConfig: 18
     },
     {
       id: 5,
-      roomKey: 'level5', //json
+      roomKey: 'level0-5', //json
       leftID: 4,//room id connected to room
       rightID: null,
+      upID: 2,
+      downID: 8,
+      doorConfig: 14
+    },
+    {
+      id: 6,
+      roomKey: 'level0-6', //json
+      leftID: null,//room id connected to room
+      rightID: 7,
+      upID: 3,
+      downID: null,
+      doorConfig: 19
+    },
+    {
+      id: 7,
+      roomKey: 'level0-7', //json
+      leftID: 6,//room id connected to room
+      rightID: 8,
       upID: 4,
       downID: null,
-    }]
+      doorConfig: 13
+    },
+    {
+      id: 8,
+      roomKey: 'level0-8', //json
+      leftID: 7,//room id connected to room
+      rightID: null,
+      upID: 5,
+      downID: null,
+      doorConfig: 17
+    }
+    ]
 }
 
 
@@ -212,5 +248,5 @@ var defaultValues = {
   currentLevel: 0
 }
 function roomComplete() {
-  return playerData.roomsCompleted.indexOf(currentRoom) > -1
+  return playerData.roomsCompleted[currentWorld].indexOf(currentRoom) > -1
 }
