@@ -108,7 +108,12 @@ class preloadGame extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 32
     });
+    this.load.spritesheet('boss1', 'assets/sprites/boss1.png', {
+      frameWidth: 64,
+      frameHeight: 64
+    });
     this.load.image('menu', 'assets/sprites/menu.png');
+    this.load.image('logotitle', 'assets/sprites/logotitle.png');
     this.load.image('hplatform', 'assets/sprites/hplatform.png');
     this.load.image('blank', 'assets/sprites/blank.png');
     this.load.image('progressBox', 'assets/sprites/progressBox.png');

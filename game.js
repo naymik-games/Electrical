@@ -191,7 +191,7 @@ class playGame extends Phaser.Scene {
 
     this.physics.world.addCollider(lavaBall, layer, this.lavaHitLayer, null, this);
     this.physics.world.addCollider(bullets, layer, this.bulletHitLayer, null, this);
-
+    this.physics.world.addCollider(bullets, enemies, this.bulletHitEnemy, null, this);
     player.sprite.anims.play("player-idle", true);
 
     var particles = this.add.particles('particle');
@@ -203,7 +203,7 @@ class playGame extends Phaser.Scene {
     emitter.setTint(0xBABAA6)
     emitter.pause();
 
-
+    this.rooomCheck()
     this.input.addPointer(1);
   }
   update() {
@@ -486,10 +486,44 @@ class playGame extends Phaser.Scene {
   hitEnemy(playersprite, baddie) {
     //if the collision is on the baddies head
     if ((baddie.body.touching.up || player.invincible) && !player.invulnerable) {
+      baddie.strength--
+      player.sprite.setVelocityY(jumpVelocity);
+      if (baddie.strength <= 0) {
+        baddie.disableBody(false, false);
+        //make player jump up in the air a little bit
+
+
+        //animate baddie, fading out and getting bigger
+        var tween = this.tweens.add({
+          targets: baddie,
+          alpha: 0.3,
+          scaleX: 1.5,
+          scaleY: 1.5,
+          ease: 'Linear',
+          duration: 200,
+          onCompleteScope: this,
+          onComplete: function () {
+            //remove the game object
+            this.destroyGameObject(baddie);
+          },
+        });
+      }
       // set baddie as being hit and remove physics
+
+    }
+    //otherwise you've hit baddie, but not on the head. This makes you die
+    else {
+      //set player to dead
+      player.playerHit(-10)
+    }
+  }
+  bulletHitEnemy(bullet, baddie) {
+    baddie.strength--
+    player.killBullet(bullet)
+    if (baddie.strength <= 0) {
       baddie.disableBody(false, false);
       //make player jump up in the air a little bit
-      player.sprite.setVelocityY(jumpVelocity);
+
 
       //animate baddie, fading out and getting bigger
       var tween = this.tweens.add({
@@ -505,11 +539,6 @@ class playGame extends Phaser.Scene {
           this.destroyGameObject(baddie);
         },
       });
-    }
-    //otherwise you've hit baddie, but not on the head. This makes you die
-    else {
-      //set player to dead
-      player.playerHit(-10)
     }
   }
   bombHitEnemy(bomb, baddie) {
@@ -750,6 +779,7 @@ class playGame extends Phaser.Scene {
           this.scene.resume();
           this.collectUpgrade = false
           this.addScore(100)
+          this.saveGame()
         }, 1500);
       }
     }
@@ -926,7 +956,7 @@ class playGame extends Phaser.Scene {
   // CREATES
   ///////////////////////////////////////////////////////////////////////
   createPlayer() {
-    this.rooomCheck()
+    //this.rooomCheck()
 
     console.log('next room ' + currentRoom)
     console.log('connecting door ' + enteredFrom)
@@ -1562,6 +1592,9 @@ class playGame extends Phaser.Scene {
         // console.log('make enemy 2')
       } else if (this.thinglayer[i].name == 'Enemy6') {
         var enemey = new Enemy06(this, worldXY.x + (this.map.tileWidth / 2), worldXY.y - (this.map.tileHeight / 2), 5)
+        // console.log('make enemy 2')
+      } else if (this.thinglayer[i].name == 'Enemy7') {
+        var enemey = new Enemy07(this, worldXY.x + (this.map.tileWidth / 2), worldXY.y - (this.map.tileHeight / 2), 6)
         // console.log('make enemy 2')
       }
     }

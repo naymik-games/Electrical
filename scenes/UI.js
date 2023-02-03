@@ -43,7 +43,7 @@ class UI extends Phaser.Scene {
       this.keyIcon.setAlpha(1)
     }
     this.Main.events.on('roomstatus', function () {
-      console.log('current room ' + currentRoom + ', current world ' + currentWorld)
+      // console.log('current room ' + currentRoom + ', current world ' + currentWorld)
 
       this.eText.setText(rooms[worlds[currentWorld].id][currentRoom].id)
       if (roomComplete()) {

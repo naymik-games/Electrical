@@ -469,6 +469,90 @@ class Enemy06 extends Enemy {
 
 }
 /////////////////////////////////////////////////////////////////////////////////////
+// Enemy 7 boss 1
+////////////////////////////////////////////////////////////////////////////////////
+class Enemy07 extends Enemy {
+  constructor(scene, x, y, kind) {
+    super(scene, x, y, kind);
+
+    const anims = scene.anims;
+
+
+    this.launched = false
+    //this.play('thrust');
+    //  var tiles = Phaser.Math.Between(3, 6)
+    this.vx = Phaser.Math.Between(50, 100)
+    //var maxDistance = (tiles * scene.map.tileWidth) + scene.map.tileWidth / 2;
+    //  You can either do this:
+    this.speed = 100
+
+    this.previousX = this.x;
+    this.strength = enemeyConfigs[kind].strength
+    this.damage = enemeyConfigs[kind].damage
+    //this.setGravityY(800)
+    this.body.setAllowGravity(false)
+    this.body.velocity.x = -this.speed;
+    this.direction = -1
+    //this.maxDistance = maxDistance
+    this.saveXYV = { x: 0, y: 0 }
+    this.anims.create({
+      key: 'enemy-run',
+      frames: anims.generateFrameNumbers(enemeyConfigs[kind].key, enemeyConfigs[kind].frames),
+      frameRate: enemeyConfigs[kind].fr,
+      repeat: -1
+    })
+    this.play('enemy-run')
+
+  }
+  preUpdate(time, delta) {
+    super.preUpdate(time, delta);
+
+    if (this.direction == -1 && this.body.blocked.left) {
+      // console.log('blocked left')
+      // this.setFlipX(false)
+      this.body.velocity.x = this.vx;
+      this.direction = 1
+      this.previousX = this.x;
+      //this.switchDirection();
+    }
+    if (this.direction == 1 && this.body.blocked.right) {
+      //console.log('blocked right')
+      // this.setFlipX(true)
+      this.body.velocity.x = -this.vx;
+      this.direction = -1
+      this.previousX = this.x;
+      //this.switchDirection();
+    }
+    /* if (this.body.blocked.down && this.body.blocked.left) {
+      this.setGravityY(0)
+      this.setGravityX(-800)
+      this.body.velocity.x = 0;
+      this.body.velocity.y = -this.speed;
+    } else if (this.body.blocked.left && this.body.blocked.up) {
+      this.setGravityY(-800)
+      this.setGravityX(0)
+      this.body.velocity.x = this.speed;
+      this.body.velocity.y = 0;
+    } else if (this.body.blocked.up && this.body.blocked.right) {
+      this.setGravityY(0)
+      this.setGravityX(800)
+      this.body.velocity.x = 0;
+      this.body.velocity.y = this.speed;
+    } else if (this.body.blocked.right && this.body.blocked.down) {
+      this.setGravityY(800)
+      this.setGravityX(0)
+      this.body.velocity.x = -this.speed;
+      this.body.velocity.y = 0;
+    }  */
+    /* if (Math.abs(this.x - player.sprite.x) < this.maxDistance) {
+      this.enemyFollowsContinuous()
+    } */
+
+
+  }
+
+}
+/////////////////////////////////////////////////////////////////////////////////////
 // Enemy 9
 ////////////////////////////////////////////////////////////////////////////////////
 class Enemy09 extends Enemy {
@@ -520,7 +604,7 @@ class Enemy09 extends Enemy {
 
 const enemeyConfigs = [{
   //enemy 1 walks side to side jump on direction change
-  strength: 4,
+  strength: 1,
   key: 'enemies',
   frame: 50,
   fr: 8,
@@ -529,7 +613,7 @@ const enemeyConfigs = [{
 },
 {
   //eneny 2 flies side to side
-  strength: 4,
+  strength: 1,
   key: 'enemies',
   frame: 0,
   frames: { start: 0, end: 3 },
@@ -539,7 +623,7 @@ const enemeyConfigs = [{
 
 {
   //enemy 3 flies
-  strength: 4,
+  strength: 1,
   key: 'enemies',
   frame: 10,
   frames: { start: 10, end: 11 },
@@ -549,7 +633,7 @@ const enemeyConfigs = [{
 
 {
   //Enemy4 attracked to player withing range
-  strength: 2,
+  strength: 1,
   key: 'enemies',
   frame: 30,
   frames: { start: 30, end: 33 },
@@ -558,7 +642,7 @@ const enemeyConfigs = [{
 },
 
 {// Enemy 5 attracked to player
-  strength: 0,
+  strength: 1,
   key: 'enemies',
   frame: 60,
   frames: { start: 60, end: 63 },
@@ -567,7 +651,7 @@ const enemeyConfigs = [{
 },
 
 {//6 wall crawler
-  strength: 0,
+  strength: 1,
   key: 'enemies',
   fr: 6,
   frame: 4,
@@ -575,9 +659,11 @@ const enemeyConfigs = [{
   damage: 5
 },
 
-{
-  strength: 0,
-  key: 'enemies',
+{//7boos 1
+  strength: 2,
+  key: 'boss1',
+  frame: 0,
+  frames: { start: 0, end: 3 },
   fr: 6,
   damage: 5
 },

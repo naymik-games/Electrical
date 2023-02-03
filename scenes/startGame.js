@@ -18,9 +18,10 @@ class startGame extends Phaser.Scene {
       text = 'Start Game'
     }
 
-    this.cameras.main.setBackgroundColor(0x000000);
-
-    var title = this.add.bitmapText(game.config.width / 2, 100, 'topaz', 'Electrical', 100).setOrigin(.5).setTint(0xc76210);
+    this.cameras.main.setBackgroundColor(0x161616);
+    //   this.title = this.add.text(game.config.width / 2, 100, 'ELECTRICAL', { fontFamily: 'PixelFont', fontSize: '125px', color: '#C6EFD8', align: 'center' }).setOrigin(.5)//C6EFD8
+    this.title = this.add.image(game.config.width / 2, 100, 'logotitle')
+    //  var title = this.add.bitmapText(game.config.width / 2, 100, 'topaz', 'Electrical', 100).setOrigin(.5).setTint(0xc76210);
 
     this.startTime = this.add.bitmapText(game.config.width / 2, 275, 'topaz', text, 50).setOrigin(.5).setTint(0xffffff);
     this.startTime.setInteractive();
@@ -33,7 +34,7 @@ class startGame extends Phaser.Scene {
     });
     this.anims.create({
       key: "player-run",
-      frames: this.anims.generateFrameNumbers("player", { frames: [6, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8] }),
+      frames: this.anims.generateFrameNumbers("player", { frames: [6, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,] }),
       frameRate: 12,
       repeat: 0
     });
@@ -54,6 +55,7 @@ class startGame extends Phaser.Scene {
 
   }
   clickHandler() {
+    console.log(playerData)
     currentRoom = playerData.currentRoom
     currentWorld = playerData.currentWorld
 
