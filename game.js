@@ -84,13 +84,13 @@ class playGame extends Phaser.Scene {
 
     this.createEnemies()
 
-    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);// 
+    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels + 100);// 
     this.cameras.main.setViewport(0, 100, game.config.width, game.config.height);
     // this.cameras.main.setDeadzone(game.config.width / 8, game.config.height / 4);
     this.createPlayer()
     // player.sprite.setTint(0xBABAA6)
     //this.cameras.main.startFollow(player.sprite);
-    this.cameras.main.startFollow(player.sprite, true, 0.05);
+    this.cameras.main.startFollow(player.sprite, true, 0.65);
 
 
     bombs = this.add.group({
@@ -146,7 +146,7 @@ class playGame extends Phaser.Scene {
     this.collectUpgrade = false
 
     this.buildTouchSlider();
-    this.cameras.main.setZoom(2)
+    this.cameras.main.setZoom(1.5)
     this.physics.world.addCollider(player.sprite, layer, function () {
       player.launched = false
       player.sprite.body.setGravityY(800);
@@ -1148,7 +1148,7 @@ class playGame extends Phaser.Scene {
   }
   createHPlatforms() {
     hPlatforms = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(hPlatformFrame, 0, { key: 'tiles', frame: hPlatformFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(hPlatformFrame, 0, { key: 'hplatform' }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)

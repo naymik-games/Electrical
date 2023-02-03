@@ -76,6 +76,8 @@ class UI extends Phaser.Scene {
       if (Math.sign(amount) == -1) {//losing health
 
         if (playerData.health + amount < 1) { //if new health less than zero
+          playerData.health = 0
+          this.updateHealthBar()
           console.log('die')
           // tankCount: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0 don't have, 1 empth, 2 full
         } else { //lose health but not less than zero, deduct and move on
@@ -167,11 +169,11 @@ class UI extends Phaser.Scene {
   makeMenu() {
     ////////menu
     this.menuGroup = this.add.container().setDepth(5);
-    var menuBG = this.add.image(game.config.width / 2, game.config.height - 85, 'blank').setOrigin(.5, 0).setTint(0x333333).setAlpha(.8)
-    menuBG.displayWidth = 300;
+    var menuBG = this.add.image(game.config.width / 2, game.config.height - 50, 'blank').setOrigin(.5, 0).setTint(0x333333).setAlpha(.8)
+    menuBG.displayWidth = 200;
     menuBG.displayHeight = 600
     this.menuGroup.add(menuBG)
-    var menuButton = this.add.image(game.config.width / 2, game.config.height - 40, "menu").setInteractive().setDepth(3);
+    var menuButton = this.add.image(game.config.width / 2, game.config.height - 25, "menu").setInteractive().setDepth(3);
     menuButton.on('pointerdown', this.toggleMenu, this)
     menuButton.setOrigin(0.5);
     this.menuGroup.add(menuButton);
