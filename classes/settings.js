@@ -23,6 +23,7 @@ let cursors,
   keys,
   bombBody,
   bombBlocks,
+  reappearBlocks,
   lavas,
   lavaLaunchers,
   lavaBall,
@@ -78,6 +79,7 @@ let upgradeBombFrame = 105
 let upgradeLongFrame = 106
 let upgradeBodyFrame = 107
 let upgrade3Frame = 108
+let reappearFrame = 7
 
 let upgradeTeleportFrame = 109
 let upgradeTopFrame = 91

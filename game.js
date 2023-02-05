@@ -20,7 +20,7 @@ window.onload = function () {
       }
     },
     backgroundColor: 0x222222,
-    scene: [preloadGame, startGame, playGame, UI]
+    scene: [preloadGame, startGame, playGame, Runner, UI]
   }
   game = new Phaser.Game(gameConfig);
   window.focus();
@@ -158,15 +158,19 @@ class playGame extends Phaser.Scene {
     this.physics.add.collider(player.sprite, collapsingBlocks, this.shakeBlock, this.checkOneWay, this);
     this.physics.add.collider(player.sprite, hPlatforms);
     this.physics.add.overlap(player.sprite, launchers, this.launchPlayer, null, this);
-    this.physics.add.overlap(player.sprite, beams, this.hitBeam, null, this);
-    this.physics.add.overlap(player.sprite, lavas, this.hitLava, null, this);
-    this.physics.add.overlap(player.sprite, sparks, this.hitSpark, null, this);
-    this.physics.add.overlap(player.sprite, lavaBall, this.hitLavaBall, null, this);
+
+
+
+
     this.physics.add.overlap(player.sprite, powerupGroup, this.collectObject, null, this);
     this.physics.add.overlap(player.sprite, upgrades, this.hitUpgrade, null, this);
     if (!roomComplete()) {
       this.physics.add.overlap(player.sprite, keys, this.collectObject, null, this);
-
+      this.physics.add.overlap(player.sprite, lavas, this.hitLava, null, this);
+      this.physics.add.overlap(player.sprite, sparks, this.hitSpark, null, this);
+      this.physics.add.overlap(player.sprite, beams, this.hitBeam, null, this);
+      this.physics.add.overlap(player.sprite, lavaBall, this.hitLavaBall, null, this);
+      this.physics.add.collider(enemies, lavas);
     }
     this.physics.add.collider(player.sprite, controls, this.hitControl, null, this);
     this.physics.add.collider(player.sprite, switches, this.hitSwitch, null, this);
@@ -182,8 +186,8 @@ class playGame extends Phaser.Scene {
 
     this.physics.add.collider(enemies, layer);
     this.physics.add.collider(enemies, bombBlocks);
-    this.physics.add.collider(enemies, lavas);
-    this.physics.add.collider(enemies, sparks);
+
+    // this.physics.add.collider(enemies, sparks);
     this.physics.add.collider(enemies, collapsingBlocks);
     this.physics.add.collider(enemies, controls);
     this.physics.add.collider(enemies, switches);
@@ -192,6 +196,7 @@ class playGame extends Phaser.Scene {
     this.physics.world.addCollider(lavaBall, layer, this.lavaHitLayer, null, this);
     this.physics.world.addCollider(bullets, layer, this.bulletHitLayer, null, this);
     this.physics.world.addCollider(bullets, enemies, this.bulletHitEnemy, null, this);
+    this.physics.world.addCollider(bullets, reappearBlocks, this.bulletHitReappear, null, this);
     player.sprite.anims.play("player-idle", true);
 
     var particles = this.add.particles('particle');
@@ -447,7 +452,7 @@ class playGame extends Phaser.Scene {
       player.sprite.setAccelerationX(-acceleration);
     } else {
       //if hero is in the air then accelerate slower
-      player.sprite.setAccelerationX(-acceleration / 3);
+      player.sprite.setAccelerationX(-acceleration / 2);
     }
   }
 
@@ -459,7 +464,7 @@ class playGame extends Phaser.Scene {
       player.sprite.setAccelerationX(acceleration);
     } else {
       //if hero is in the air then accelerate slower
-      player.sprite.setAccelerationX(acceleration / 3);
+      player.sprite.setAccelerationX(acceleration / 2);
     }
   }
   ////////////////////////////////////////////////////////////////////
@@ -516,6 +521,42 @@ class playGame extends Phaser.Scene {
       //set player to dead
       player.playerHit(-10)
     }
+  }
+  bulletHitReappear(bullet, block) {
+    player.killBullet(bullet)
+    var tween = this.tweens.add({
+      targets: block,
+      alpha: 0.2,
+      //angle: 720,
+      //x: scoreCoin.x,
+      //  y: '-=50',
+      //scaleX: 0.5,
+      // scaleY: 0.5,
+      ease: "Linear",
+      duration: 250,
+      onComplete: function () {
+        block.body.enable = false
+      }
+    }, this);
+    var timer = this.time.delayedCall(2000, this.reappearBlock, [block], this);
+  }
+  reappearBlock(block) {
+    var tween = this.tweens.add({
+      targets: block,
+      alpha: 1,
+      //angle: 720,
+      //x: scoreCoin.x,
+      //  y: '-=50',
+      //scaleX: 0.5,
+      // scaleY: 0.5,
+      ease: "Linear",
+      duration: 250,
+      onCompleteScope: this,
+      onComplete: function () {
+        block.body.enable = true
+
+      }
+    }, this);
   }
   bulletHitEnemy(bullet, baddie) {
     baddie.strength--
@@ -1082,6 +1123,16 @@ class playGame extends Phaser.Scene {
       collapsingBlocks.add(sprites[i])
     }
   }
+  createReappear(layer) {
+    reappearBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
+    var sprites = this.map.createFromTiles(reappearFrame, 0, { key: 'tiles', frame: reappearFrame }, null, null, layer)
+    for (var i = 0; i < sprites.length; i++) {
+      sprites[i].x += (this.map.tileWidth / 2)
+      sprites[i].y += (this.map.tileHeight / 2)
+      sprites[i].kind = 'up'
+      reappearBlocks.add(sprites[i])
+    }
+  }
   createSwitchBlocks(layer) {
     switchBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
     var sprites = this.map.createFromTiles(switchBlockFrame, 0, { key: 'tiles', frame: switchBlockFrame }, null, null, layer)
@@ -1209,101 +1260,118 @@ class playGame extends Phaser.Scene {
 
   }
   createLava(layer) {
-    this.anims.create({
-      key: "layer-lava",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: [46, 47, 48] }),
-      frameRate: 8,
-      repeat: -1
-    });
-    lavas = this.physics.add.group({ allowGravity: false, immovable: true });
+    if (!roomComplete()) {
+      this.anims.create({
 
-    var sprites = this.map.createFromTiles(lavaFrame, 0, { key: 'tiles', frame: lavaFrame }, null, null, layer)//lavaframes[Phaser.Math.Between(0, 2)]
-    for (var i = 0; i < sprites.length; i++) {
-      sprites[i].x += (this.map.tileWidth / 2)
-      sprites[i].y += (this.map.tileHeight / 2)
-      sprites[i].setDepth(4)
-      sprites[i].damage = 6
-      lavas.add(sprites[i])
+        key: "layer-lava",
+        frames: this.anims.generateFrameNumbers('tiles', { frames: [46, 47, 48] }),
+        frameRate: 8,
+        repeat: -1
+      });
+      lavas = this.physics.add.group({ allowGravity: false, immovable: true });
 
+      var sprites = this.map.createFromTiles(lavaFrame, 0, { key: 'tiles', frame: lavaFrame }, null, null, layer)//lavaframes[Phaser.Math.Between(0, 2)]
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].setDepth(4)
+        sprites[i].damage = 6
+        lavas.add(sprites[i])
+
+      }
+      Phaser.Actions.Call(lavas.getChildren(), child => {
+        //child.body.setSize(8, 32).setOffset(12, 0)
+        child.anims.play('layer-lava', true);
+      });
+    } else {
+      this.map.replaceByIndex(lavaFrame, 0)
     }
-    Phaser.Actions.Call(lavas.getChildren(), child => {
-      //child.body.setSize(8, 32).setOffset(12, 0)
-      child.anims.play('layer-lava', true);
-    });
+
     //sparks.playAnimation('layer-spark')
   }
   createBeams(layer) {
-    this.anims.create({
-      key: "layer-beam",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: [22, 26, 23] }),
-      frameRate: 8,
-      repeat: -1
-    });
-    beams = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(beamFrame, 0, { key: 'tiles', frame: beamFrame }, null, null, layer)
-    for (var i = 0; i < sprites.length; i++) {
-      sprites[i].x += (this.map.tileWidth / 2)
-      sprites[i].y += (this.map.tileHeight / 2)
-      sprites[i].setDepth(3)
-      sprites[i].damage = 6
-      beams.add(sprites[i])
-      sprites[i].body.setSize(8, 32).setOffset(12, 0)
-      sprites[i].anims.play('layer-beam', true);
+    if (!roomComplete()) {
+      this.anims.create({
+        key: "layer-beam",
+        frames: this.anims.generateFrameNumbers('tiles', { frames: [22, 26, 23] }),
+        frameRate: 8,
+        repeat: -1
+      });
+      beams = this.physics.add.group({ allowGravity: false, immovable: true });
+      var sprites = this.map.createFromTiles(beamFrame, 0, { key: 'tiles', frame: beamFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].setDepth(3)
+        sprites[i].damage = 6
+        beams.add(sprites[i])
+        sprites[i].body.setSize(8, 32).setOffset(12, 0)
+        sprites[i].anims.play('layer-beam', true);
+
+        ////////////////////////////////////////
+        this.anims.create({
+          key: "layer-beam-h",
+          frames: this.anims.generateFrameNumbers('tiles', { frames: [96, 97, 98] }),
+          frameRate: 8,
+          repeat: -1
+        });
+
+        var sprites = this.map.createFromTiles(hBeamFrame, 0, { key: 'tiles', frame: hBeamFrame }, null, null, layer)
+        for (var i = 0; i < sprites.length; i++) {
+          sprites[i].x += (this.map.tileWidth / 2)
+          sprites[i].y += (this.map.tileHeight / 2)
+          sprites[i].setDepth(3)
+          sprites[i].damage = 6
+          beams.add(sprites[i])
+          sprites[i].body.setSize(32, 8).setOffset(0, 12)
+          sprites[i].anims.play('layer-beam-h', true);
+        }
+      }
+    } else {
+      this.map.replaceByIndex(beamFrame, 0)
+      this.map.replaceByIndex(hBeamFrame, 0)
     }
+
     //sparks.playAnimation('layer-spark')
     /*     Phaser.Actions.Call(beams.getChildren(), child => {
     
         }); */
-    ////////////////////////////////////////
-    this.anims.create({
-      key: "layer-beam-h",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: [96, 97, 98] }),
-      frameRate: 8,
-      repeat: -1
-    });
 
-    var sprites = this.map.createFromTiles(hBeamFrame, 0, { key: 'tiles', frame: hBeamFrame }, null, null, layer)
-    for (var i = 0; i < sprites.length; i++) {
-      sprites[i].x += (this.map.tileWidth / 2)
-      sprites[i].y += (this.map.tileHeight / 2)
-      sprites[i].setDepth(3)
-      sprites[i].damage = 6
-      beams.add(sprites[i])
-      sprites[i].body.setSize(32, 8).setOffset(0, 12)
-      sprites[i].anims.play('layer-beam-h', true);
-    }
 
   }
   createLavaLauncher(layer) {
-    this.anims.create({
-      key: "layer-lavaball",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: [86, 87, 88, 89] }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    lavaLaunchers = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(lavaLauncherFrame, 0, { key: 'tiles', frame: lavaLauncherFrame }, null, null, layer)
-    for (var i = 0; i < sprites.length; i++) {
-      sprites[i].x += (this.map.tileWidth / 2)
-      sprites[i].y += (this.map.tileHeight / 2)
-      lavaLaunchers.add(sprites[i])
-    }
-    var launchTimes = [1500, 2000, 2500, 3000]//
-    lavaLaunchers.getChildren().forEach(function (box) {
-      //box.launcher = this.time.delayedCall(2000, this.launch, [box], this);
-      var ranTime = Phaser.Math.Between(0, launchTimes.length - 1)
-      box.launcher = this.time.addEvent({
-        delay: launchTimes[ranTime],                // ms
-        callback: this.launch,
-        args: [box],
-        callbackScope: this,
+    if (!roomComplete()) {
+      this.anims.create({
+        key: "layer-lavaball",
+        frames: this.anims.generateFrameNumbers('tiles', { frames: [86, 87, 88, 89] }),
+        frameRate: 8,
         repeat: -1
       });
 
+      lavaLaunchers = this.physics.add.group({ allowGravity: false, immovable: true });
+      var sprites = this.map.createFromTiles(lavaLauncherFrame, 0, { key: 'tiles', frame: lavaLauncherFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        lavaLaunchers.add(sprites[i])
+      }
+      var launchTimes = [1500, 2000, 2500, 3000]//
+      lavaLaunchers.getChildren().forEach(function (box) {
+        //box.launcher = this.time.delayedCall(2000, this.launch, [box], this);
+        var ranTime = Phaser.Math.Between(0, launchTimes.length - 1)
+        box.launcher = this.time.addEvent({
+          delay: launchTimes[ranTime],                // ms
+          callback: this.launch,
+          args: [box],
+          callbackScope: this,
+          repeat: -1
+        });
 
+      }, this);
+    } else {
+      //this.map.replaceByIndex(lavaLauncherFrame, 0)
+    }
 
-    }, this);
   }
   launch(box) {
     var t = this.tweens.add({
@@ -1330,27 +1398,35 @@ class playGame extends Phaser.Scene {
     bomb.body.velocity.y = 100;
   }
   createSparks(layer) {
-    this.anims.create({
-      key: "layer-spark",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: [0, 17, 18, 19] }),
-      frameRate: 12,
-      repeat: -1
-    });
-    sparks = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(sparkFrame, 0, { key: 'tiles', frame: sparkFrame }, null, null, layer)
-    for (var i = 0; i < sprites.length; i++) {
-      sprites[i].x += (this.map.tileWidth / 2)
-      sprites[i].y += (this.map.tileHeight / 2)
-      sprites[i].setDepth(3)
-      sprites[i].damage = 4
-      sparks.add(sprites[i])
+    if (!roomComplete()) {
+      this.anims.create({
+        key: "layer-spark",
+        frames: this.anims.generateFrameNumbers('tiles', { frames: [0, 17, 18, 19] }),
+        frameRate: 12,
+        repeat: -1
+      });
+      sparks = this.physics.add.group({ allowGravity: false, immovable: true });
+      var sprites = this.map.createFromTiles(sparkFrame, 0, { key: 'tiles', frame: sparkFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].setDepth(3)
+        sprites[i].damage = 4
+        sparks.add(sprites[i])
 
+      }
+      //sparks.playAnimation('layer-spark')
+      Phaser.Actions.Call(sparks.getChildren(), child => {
+        child.body.setSize(15, 9).setOffset(8, 23)
+        child.anims.play('layer-spark', true);
+      });
+    } else {
+      this.map.replaceByIndex(sparkFrame, 0)
     }
-    //sparks.playAnimation('layer-spark')
-    Phaser.Actions.Call(sparks.getChildren(), child => {
-      child.body.setSize(15, 9).setOffset(8, 23)
-      child.anims.play('layer-spark', true);
-    });
+
+
+
+
   }
   createUpgrader(layer) {
     /*     let upgradePowerFrame = 103

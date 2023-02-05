@@ -82,7 +82,7 @@ class preloadGame extends Phaser.Scene {
       frameHeight: 6
     });
 
-    this.load.spritesheet("player", "assets/sprites/player.png", {
+    this.load.spritesheet("player", "assets/sprites/player2.png", {
       frameWidth: 32,
       frameHeight: 32,
       margin: 1,
@@ -94,7 +94,7 @@ class preloadGame extends Phaser.Scene {
       margin: 1,
       spacing: 1
     });
-    this.load.spritesheet("tiles", "assets/sprites/tiles.png", {
+    this.load.spritesheet("tiles", "assets/sprites/tiles2.png", {
       frameWidth: 32,
       frameHeight: 32,
       margin: 1,
@@ -121,6 +121,9 @@ class preloadGame extends Phaser.Scene {
     this.load.image("touch-knob", "assets/sprites/touch-knob.png");
     this.load.image("bomb", "assets/sprites/bomb.png");
     this.load.image("bullet", "assets/sprites/bullet.png");
+    this.load.image("ground", "assets/sprites/ground.png");
+    this.load.image("game-over", "assets/sprites/game-over.png");
+    this.load.image("restart", "assets/sprites/restart.png");
   }
   create() {
     this.scene.start("startGame");

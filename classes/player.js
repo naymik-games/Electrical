@@ -87,9 +87,6 @@ class Player {
         if (this.roll) {
           this.sprite.anims.play("player-roll", true);
           this.sprite.body.setSize(playerRollBodyX, playerRollBodyY).setOffset(playerRollBodyXOffset, playerRollBodyYOffset)
-        } else if (this.sprite.body.velocity.y < 0) {
-          this.sprite.anims.play("player-jump", true);
-          this.sprite.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
         } else {
           this.sprite.anims.play("player-run", true);
           this.sprite.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
@@ -119,6 +116,9 @@ class Player {
       if (this.roll) {
         this.sprite.anims.play("player-roll", true);
         //this.player.sprite.body.setSize(playerRollBodyX, playerRollBodyY).setOffset(playerRollBodyXOffset, playerRollBodyYOffset)
+      } else if (this.sprite.body.velocity.y < 0) {
+        this.sprite.anims.play("player-jump", true);
+        this.sprite.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
       } else {
         this.sprite.anims.play("player-idle", true);
       }
