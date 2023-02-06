@@ -124,6 +124,14 @@ class preloadGame extends Phaser.Scene {
     this.load.image("ground", "assets/sprites/ground.png");
     this.load.image("game-over", "assets/sprites/game-over.png");
     this.load.image("restart", "assets/sprites/restart.png");
+    this.load.spritesheet('clouds', 'assets/sprites/clouds.png', {
+      frameWidth: 96,
+      frameHeight: 96
+    });
+    this.load.spritesheet('obsticles', 'assets/sprites/obsticles.png', {
+      frameWidth: 32,
+      frameHeight: 32
+    });
   }
   create() {
     this.scene.start("startGame");

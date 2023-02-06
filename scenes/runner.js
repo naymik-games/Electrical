@@ -10,8 +10,19 @@ class Runner extends Phaser.Scene {
     const { height, width } = game.config;
     this.gameSpeed = 5;
     this.respawnTime = 0;
+    this.coinTime = 0
     this.isGameRunning = true;
     this.ground = this.add.tileSprite(0, height, width, 32, 'ground').setOrigin(0, 1)
+    this.ceiling = this.add.tileSprite(0, 600, width, 87, 'logotitle').setOrigin(0, 1)
+
+
+    this.environment = this.add.group();
+    this.environment.addMultiple([
+      this.add.image(48, 1000, 'clouds', 0),
+      this.add.image(width / 2, 900, 'clouds', 1),
+      this.add.image((width - 48), 950, 'clouds', 2)
+    ]);
+    this.environment.setAlpha(1);
 
     this.anims.create({
       key: "player-run",
@@ -43,15 +54,16 @@ class Runner extends Phaser.Scene {
     this.groundBody.body.setImmovable(true)
 
     this.obsticles = this.physics.add.group();
+    this.coins = this.physics.add.group();
 
 
-    this.gameOverScreen = this.add.container(width / 2, height / 2 - 50).setAlpha(0)
+    this.gameOverScreen = this.add.container(width / 2 - 100, height / 2 + 100).setAlpha(0)
     this.gameOverText = this.add.image(0, 0, 'game-over');
     this.restart = this.add.image(0, 80, 'restart').setInteractive();
     this.gameOverScreen.add([
       this.gameOverText, this.restart
     ])
-
+    //this.gameOverScreen.setScrollFactor(0)
     this.restart.on('pointerdown', () => {
       this.player.setVelocityY(0);
       //   this.dino.body.height = 92;
@@ -85,6 +97,24 @@ class Runner extends Phaser.Scene {
       //  this.hitSound.play();
     }, null, this);
 
+    this.physics.add.overlap(this.player, this.coins, (player, coin) => {
+      coin.disableBody(false, false);
+      var tween = this.tweens.add({
+        targets: coin,
+        alpha: 0.3,
+        angle: 720,
+        //x: scoreCoin.x,
+        y: '-=100',
+        scaleX: 0.5,
+        scaleY: 0.5,
+        ease: "Linear",
+        duration: 500,
+        onCompleteScope: this,
+        onComplete: function () {
+          this.coins.killAndHide(coin);
+        }
+      });
+    }, null, this);
 
     this.buildTouchSlider();
   }
@@ -93,10 +123,12 @@ class Runner extends Phaser.Scene {
 
 
     this.ground.tilePositionX += this.gameSpeed;
-
+    this.ceiling.tilePositionX += this.gameSpeed - 2;
+    Phaser.Actions.IncX(this.environment.getChildren(), - 0.5);
     Phaser.Actions.IncX(this.obsticles.getChildren(), -this.gameSpeed);
+    Phaser.Actions.IncX(this.coins.getChildren(), -this.gameSpeed);
     this.respawnTime += delta * this.gameSpeed * 0.08;
-    if (this.respawnTime >= 1500) {
+    if (this.respawnTime >= 1250) {
       this.placeObsticle();
       this.respawnTime = 0;
     }
@@ -106,6 +138,19 @@ class Runner extends Phaser.Scene {
         this.obsticles.killAndHide(obsticle);
       }
     })
+
+    this.coinTime += delta * this.gameSpeed * 0.07;
+    if (this.coinTime >= 1500) {
+      this.placeCoin();
+      this.coinTime = 0;
+    }
+
+    this.coins.getChildren().forEach(coin => {
+      if (coin.getBounds().right < 0) {
+        this.coins.killAndHide(coin);
+      }
+    })
+
     var standing = this.player.body.blocked.down || this.player.body.touching.down;
 
     if (this.input.pointer1.isDown || this.input.pointer2.isDown) {
@@ -300,10 +345,24 @@ class Runner extends Phaser.Scene {
     wasStanding = standing;
 
 
+    this.environment.getChildren().forEach(env => {
+      if (env.getBounds().right < 0) {
+        env.x = game.config.width + 30;
+      }
+    })
+
+  }
+  placeCoin() {
+    const distance = Phaser.Math.Between(600, 900);
+    const enemyHeight = [96, 128, 160];
+    let coin;
+    coin = this.coins.create(game.config.width + distance, game.config.height - enemyHeight[Math.floor(Math.random() * 3)], 'tiles', 24)
+      .setOrigin(0, 1);
+    coin.setImmovable();
   }
   placeObsticle() {
     // const obsticleNum = Math.floor(Math.random() * 7) + 1;
-    const obsticleNum = 1
+    const obsticleNum = Phaser.Math.Between(0, 3)
     const distance = Phaser.Math.Between(600, 900);
 
     let obsticle;
@@ -313,18 +372,24 @@ class Runner extends Phaser.Scene {
         .setOrigin(0, 1)
       obsticle.play('enemy-dino-fly', 1);
       obsticle.body.height = obsticle.body.height / 1.5;
+    } else if (obsticleNum == 0) {
+      console.log('crete obstacle')
+      obsticle = this.obsticles.create(game.config.width + distance, game.config.height - 64, 'obsticles', 0)
+        .setOrigin(0, 1);
+
+      obsticle.setSize(24, 28).setOffset(4, 4)
     } else if (obsticleNum == 1) {
       console.log('crete obstacle')
-      obsticle = this.obsticles.create(game.config.width + distance, game.config.height - 64, 'tiles', 7)
+      obsticle = this.obsticles.create(game.config.width + distance, game.config.height - 32, 'obsticles', 1)
         .setOrigin(0, 1);
 
-      obsticle.body.offset.y = +10;
+      obsticle.setSize(24, 28).setOffset(4, 4)
     } else {
       console.log('crete obstacle')
-      obsticle = this.obsticles.create(game.config.width + distance, game.config.height - 32, 'tiles', 7)
+      obsticle = this.obsticles.create(game.config.width + distance, game.config.height - 32, 'obsticles', 2)
         .setOrigin(0, 1);
 
-      obsticle.body.offset.y = +10;
+      obsticle.setSize(24, 28).setOffset(4, 4)
     }
 
     obsticle.setImmovable();
