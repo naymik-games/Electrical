@@ -1,7 +1,7 @@
 let gameOptions = {
 
   // first platform vertical position. 0 = top of the screen, 1 = bottom of the screen
-  firstPlatformPosition: 1 / 10,
+  firstPlatformPosition: 2 / 10,
 
   // game gravity, which only affects the hero
   gameGravity: 1200,
@@ -19,7 +19,7 @@ let gameOptions = {
   platformHorizontalDistanceRange: [0, 250],
 
   // platform vertical distance range, in pixels
-  platformVerticalDistanceRange: [150, 175]
+  platformVerticalDistanceRange: [100, 175]
 }
 
 class Verticle extends Phaser.Scene {
@@ -42,7 +42,7 @@ class Verticle extends Phaser.Scene {
     // this.ground = this.add.tileSprite(0, height, width, 32, 'ground').setOrigin(0, 1)
     this.ceiling = this.add.tileSprite(0, 100, width, 87, 'logotitle').setOrigin(0, 1)
 
-
+    this.coins = this.physics.add.group();
     this.platformGroup = this.physics.add.group();
 
     // create starting platform
@@ -84,7 +84,7 @@ class Verticle extends Phaser.Scene {
       frameRate: 6,
       repeat: 0
     });
-    this.player = this.physics.add.sprite(game.config.width / 2, (game.config.height * gameOptions.firstPlatformPosition) - 32, 'player').setOrigin(.5, 1).setGravityY(800).setMaxVelocity(200, 500)
+    this.player = this.physics.add.sprite(game.config.width / 2, (game.config.height * gameOptions.firstPlatformPosition) - 32, 'player').setOrigin(.5, 1).setGravityY(800).setMaxVelocity(200, 600)
     this.player.play('player-run')
     this.player.roll = false
     //this.cameras.main.startFollow(this.player, true, 0.65, 0, -150, 300);
@@ -94,13 +94,13 @@ class Verticle extends Phaser.Scene {
     this.physics.add.existing(this.groundBody);
     this.groundBody.body.setImmovable(true)
  */
-    this.platforms = this.physics.add.group();
+    //this.platforms = this.physics.add.group();
 
-    /* this.obsticles = this.physics.add.group();
-    this.coins = this.physics.add.group(); */
+    /* this.obsticles = this.physics.add.group();*/
 
 
-    this.gameOverScreen = this.add.container(width / 2 - 100, height / 2 + 100).setAlpha(0)
+
+    this.gameOverScreen = this.add.container(width / 2, height / 2 - 100).setAlpha(0)
     this.gameOverText = this.add.image(0, 0, 'game-over');
     this.restart = this.add.image(0, 80, 'restart').setInteractive();
     this.gameOverScreen.add([
@@ -108,18 +108,19 @@ class Verticle extends Phaser.Scene {
     ])
     //this.gameOverScreen.setScrollFactor(0)
     this.restart.on('pointerdown', () => {
+      this.player.setPosition(game.config.width / 2, 0)
       this.player.setVelocityY(0);
       //   this.dino.body.height = 92;
       //  this.dino.body.offset.y = 0;
       this.physics.resume();
-      this.obsticles.clear(true, true);
+
       this.isGameRunning = true;
       this.gameOverScreen.setAlpha(0);
       this.anims.resumeAll();
     })
 
 
-    this.physics.add.collider(this.player, this.platformGroup)
+    this.physics.add.collider(this.player, this.platformGroup, null, this.checkOneWay, this)
     /* this.physics.add.collider(this.player, this.obsticles, () => {
     
     }, null, this); */
@@ -155,6 +156,15 @@ class Verticle extends Phaser.Scene {
 
     // platform width
     platform.displayWidth = this.randomValue(gameOptions.platformLengthRange);
+    this.placeCoin(platform.x, platform.y)
+  }
+  placeCoin(x, y) {
+    console.log('create coin')
+    const enemyHeight = [25, 50, 100];
+    let coin;
+    coin = this.coins.create(x, y - enemyHeight[Math.floor(Math.random() * 3)], 'tiles', 24, true, true)
+      .setOrigin(0, 1);
+    coin.setImmovable();
   }
   getLowestPlatform() {
     let lowestPlatform = 0;
@@ -179,6 +189,23 @@ class Verticle extends Phaser.Scene {
         this.positionPlatform(platform);
       }
     }, this);
+    this.coins.getChildren().forEach(function (coin) {
+
+      // if a platform leaves the stage to the upper side...
+      if (coin.getBounds().bottom < 0) {
+
+        // ... recycle the platform
+        this.coins.killAndHide(coin)
+      }
+    }, this);
+    // if the hero falls down or leaves the stage from the top...
+    if (this.player.y > game.config.height || this.player.y < -100) {
+      this.physics.pause();
+      this.isGameRunning = false;
+      this.anims.pauseAll();
+
+      this.gameOverScreen.setAlpha(1);
+    }
     // this.ground.tilePositionX += this.gameSpeed;
     /* this.ceiling.tilePositionX += this.gameSpeed - 2;
     Phaser.Actions.IncX(this.environment.getChildren(), - 0.5);
@@ -296,6 +323,7 @@ class Verticle extends Phaser.Scene {
               if (this.firstMove) {
                 this.firstMove = false;
                 this.platformGroup.setVelocityY(-gameOptions.platformSpeed);
+                this.coins.setVelocityY(-gameOptions.platformSpeed);
               }
               if (myMovePointer.x < startX) this.moveLeft(tmpAcceleration);
               if (myMovePointer.x > startX) this.moveRight(tmpAcceleration);
@@ -378,28 +406,55 @@ class Verticle extends Phaser.Scene {
       (touchJump) &&
       !jumping
     ) {
-      this.player.setVelocityY(-700);
+      this.player.setVelocityY(-800);
       jumping = true;
       this.player.roll = false
     }
 
+    /////////ANIMATION//////////////////
+    if (standing) {
+      if (this.player.body.velocity.x !== 0) {
 
-    if (this.player.body.velocity.y < 0) {
-      this.player.anims.play("player-jump", true);
-      this.player.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
-    } else {
-      if (this.player.roll) {
-        this.player.anims.play("player-roll", true);
-        this.player.body.setSize(playerRollBodyX, playerRollBodyY).setOffset(playerRollBodyXOffset, playerRollBodyYOffset)
+        if (this.player.roll) {
+          this.player.anims.play("player-roll", true);
+          this.player.body.setSize(playerRollBodyX, playerRollBodyY).setOffset(playerRollBodyXOffset, playerRollBodyYOffset)
+        } else {
+          this.player.anims.play("player-run", true);
+          this.player.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
+        }
+
       } else {
-        this.player.anims.play("player-run", true);
-        this.player.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
+        if (this.player.body.velocity.y < -300) {
+          this.player.anims.play("player-jump", true);
+          this.player.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
+        } else {
+          if (this.roll) {
+            this.player.anims.play("player-roll", true);
+            this.player.body.setSize(playerRollBodyX, playerRollBodyY).setOffset(playerRollBodyXOffset, playerRollBodyYOffset)
+          } else {
+            this.player.anims.play("player-idle", true);
+            this.player.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
+          }
+
+          // this.sprite.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
+
+        }
+
+
       }
 
-      // this.sprite.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
-
+    } else {
+      if (this.roll) {
+        this.player.anims.play("player-roll", true);
+        //this.player.sprite.body.setSize(playerRollBodyX, playerRollBodyY).setOffset(playerRollBodyXOffset, playerRollBodyYOffset)
+      } else if (this.player.body.velocity.y < 0) {
+        this.player.anims.play("player-jump", true);
+        this.player.body.setSize(playerStandBodyX, playerStandBodyY).setOffset(playerStandBodyXOffset, playerStandBodyYOffset)
+      } else {
+        this.player.anims.play("player-idle", true);
+      }
     }
-
+    /////////////////////////////////
 
     //if not pressing up key...
     //if (!cursors.up.isDown) {
@@ -444,14 +499,7 @@ class Verticle extends Phaser.Scene {
       this.player.setAccelerationX(acceleration / 1.5);
     }
   }
-  placeCoin() {
-    const distance = Phaser.Math.Between(600, 900);
-    const enemyHeight = [96, 128, 160];
-    let coin;
-    coin = this.coins.create(game.config.width + distance, game.config.height - enemyHeight[Math.floor(Math.random() * 3)], 'tiles', 24)
-      .setOrigin(0, 1);
-    coin.setImmovable();
-  }
+
   placePlatform() {
     const distance = Phaser.Math.Between(600, 900);
     const enemyHeight = [96, 128, 160];
@@ -460,7 +508,13 @@ class Verticle extends Phaser.Scene {
       .setOrigin(0, 1);
     platform.setImmovable();
   }
-
+  checkOneWay(player, oneway) {
+    if (player.y < oneway.y) {
+      return true;
+    }
+    //otherwise disable collision
+    return false;
+  }
   buildTouchSlider() {
     sliderBar = this.add.sprite(0, 0, "touch-slider");
     sliderKnob = this.add.sprite(0, 0, "touch-knob");
