@@ -89,8 +89,8 @@ class Enemy01 extends Enemy {
     this.setGravityY(800)
     this.launched = false
     //this.play('thrust');
-    var tiles = Phaser.Math.Between(3, 6)
-    this.vx = Phaser.Math.Between(10, 35)
+    var tiles = 3
+    this.vx = Phaser.Math.Between(10, 25)
     var maxDistance = (tiles * scene.map.tileWidth) + scene.map.tileWidth / 2;
     //  You can either do this:
 

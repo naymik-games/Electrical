@@ -41,6 +41,8 @@ let cursors,
   upgrades,
   transports,
   sparks,
+  blockSparks,
+  batteryPacks,
   startX,
   startY;
 

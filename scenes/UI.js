@@ -24,7 +24,8 @@ class UI extends Phaser.Scene {
     this.header.displayHeight = 100;
 
 
-    var value = 1
+    var health = playerData.health
+    var value = health / 100
     progressBox = this.add.graphics();
     progressBox.fillStyle(0x454545, .8);
     progressBox.fillRect(50, 25, 150, 35);

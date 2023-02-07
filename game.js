@@ -20,7 +20,7 @@ window.onload = function () {
       }
     },
     backgroundColor: 0x222222,
-    scene: [preloadGame, startGame, playGame, Runner, UI]
+    scene: [preloadGame, startGame, playGame, Runner, Verticle, UI]
   }
   game = new Phaser.Game(gameConfig);
   window.focus();
@@ -85,6 +85,7 @@ class playGame extends Phaser.Scene {
     this.keyCount = 0
     if (!roomComplete()) {
       this.createKeys()
+      this.createBatteries()
     }
 
     this.createEnemies()
@@ -174,8 +175,10 @@ class playGame extends Phaser.Scene {
     this.physics.add.overlap(player.sprite, transports, this.hitTransport, null, this);
     if (!roomComplete()) {
       this.physics.add.overlap(player.sprite, keys, this.collectObject, null, this);
+      this.physics.add.overlap(player.sprite, batteryPacks, this.collectObject, null, this);
       this.physics.add.overlap(player.sprite, lavas, this.hitLava, null, this);
       this.physics.add.overlap(player.sprite, sparks, this.hitSpark, null, this);
+      this.physics.add.collider(player.sprite, blockSparks, this.hitBlockSpark, null, this);
       this.physics.add.overlap(player.sprite, beams, this.hitBeam, null, this);
       this.physics.add.overlap(player.sprite, lavaBall, this.hitLavaBall, null, this);
       this.physics.add.collider(enemies, lavas);
@@ -485,6 +488,9 @@ class playGame extends Phaser.Scene {
     player.playerHit(-10)
   }
   hitSpark(playersprite, spark) {
+    player.playerHit(-10)
+  }
+  hitBlockSpark(playersprite, spark) {
     player.playerHit(-10)
   }
   hitLavaBall(playersprite, ball) {
@@ -859,6 +865,10 @@ class playGame extends Phaser.Scene {
       player.hasKey = true
       player.keys.push(gameObject.id)
       this.updateKey()
+    }
+    if (gameObject.type == 'Energy Tank') {
+
+      this.addScore(100)
     }
     if (gameObject.type == 'invincible') {
       console.log('invincible')
@@ -1502,10 +1512,11 @@ class playGame extends Phaser.Scene {
 
       }
       //block
+      blockSparks = this.physics.add.group({ allowGravity: false, immovable: true });
       this.anims.create({
         key: "layer-spark-block",
         frames: this.anims.generateFrameNumbers('blockspark', { frames: blockSparkFrames }),
-        frameRate: 12,
+        frameRate: 9,
         repeat: -1
       });
 
@@ -1516,7 +1527,7 @@ class playGame extends Phaser.Scene {
         sprites[i].setDepth(3)
         sprites[i].damage = 4
         sprites[i].kind = 'block'
-        sparks.add(sprites[i])
+        blockSparks.add(sprites[i])
 
       }
       //sparks.playAnimation('layer-spark')
@@ -1537,12 +1548,11 @@ class playGame extends Phaser.Scene {
 
           child.body.setSize(9, 15).setOffset(8, 9)
           child.anims.play('layer-spark-right', true);
-        } else if (child.kind == 'block') {
-
-          child.body.setSize(48, 48).setOffset(0, 0)
-          child.anims.play('layer-spark-block', true);
         }
-
+      });
+      Phaser.Actions.Call(blockSparks.getChildren(), child => {
+        child.body.setSize(32, 32).setOffset(0, 0)
+        child.anims.play('layer-spark-block', true);
       });
     } else {
       this.map.replaceByIndex(sparkUpFrame, 0)
@@ -1799,6 +1809,20 @@ class playGame extends Phaser.Scene {
       }
     }
 
+  }
+  createBatteries() {
+    batteryPacks = this.physics.add.group({ allowGravity: false });
+    for (var i = 0; i < this.thinglayer.length; i++) {
+      if (this.thinglayer[i].name == 'Energy Tank') {
+        // console.log(this.thinglayer[i])
+        var worldXY = this.map.tileToWorldXY(this.thinglayer[i].x, this.thinglayer[i].y + 1)
+        var battery = batteryPacks.create(worldXY.x + (this.map.tileWidth / 2), worldXY.y - (this.map.tileHeight / 2), 'battery')//99
+        battery.type = this.thinglayer[i].name
+
+        battery.setOrigin(.5, .5);
+
+      }
+    }
   }
   createEnemies() {
 

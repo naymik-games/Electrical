@@ -30,7 +30,9 @@ class startGame extends Phaser.Scene {
     this.startRunner = this.add.bitmapText(game.config.width / 2, 875, 'topaz', 'Runner', 50).setOrigin(.5).setTint(0xffffff);
     this.startRunner.setInteractive();
     this.startRunner.on('pointerdown', this.clickHandler2, this);
-
+    this.startVerticle = this.add.bitmapText(game.config.width / 2, 925, 'topaz', 'Verticle', 50).setOrigin(.5).setTint(0xffffff);
+    this.startVerticle.setInteractive();
+    this.startVerticle.on('pointerdown', this.clickHandler3, this);
 
     this.anims.create({
       key: "player-idle",
@@ -62,6 +64,9 @@ class startGame extends Phaser.Scene {
   }
   clickHandler2() {
     this.scene.start('Runner');
+  }
+  clickHandler3() {
+    this.scene.start('Verticle');
   }
   clickHandler() {
     console.log(playerData)
