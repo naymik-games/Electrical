@@ -39,6 +39,7 @@ let cursors,
   bullets,
   bulletSpeed = 350,
   upgrades,
+  transports,
   sparks,
   startX,
   startY;
@@ -58,7 +59,17 @@ let oneWayLeftFrame = 10
 let lavaFrame = 5
 let lavaLauncherFrame = 14
 let lavaBallFrame = 15
-let sparkFrame = 17
+let sparkUpFrame = 17
+let sparkUpFrames = [0, 17, 18, 19]
+let sparkDownFrame = 146
+let sparkDownFrames = [0, 146, 147, 148]
+let sparkRightFrame = 118
+let sparkRightFrames = [0, 118, 128, 138]
+let sparkLeftFrame = 117
+let sparkLeftFrames = [0, 117, 127, 137]
+let blockSparkFrame = 115
+let blockSparkFrames = [0, 1, 2, 3]
+
 let hPlatformFrame = 21
 let beamFrame = 22
 let hBeamFrame = 96
@@ -80,6 +91,12 @@ let upgradeLongFrame = 106
 let upgradeBodyFrame = 107
 let upgrade3Frame = 108
 let reappearFrame = 7
+let to0TransportFrame = 150
+let to1TransportFrame = 151
+let to2TransportFrame = 152
+let to3TransportFrame = 160
+let to4TransportFrame = 161
+let to5TransportFrame = 162
 
 let upgradeTeleportFrame = 109
 let upgradeTopFrame = 91
@@ -145,9 +162,19 @@ let gridRows = 8
 let worlds = [
   {
     id: 0,
-    name: 'The Start',
+    name: 'White Board',
     cols: 3,
-    rows: 3
+    rows: 3,
+    transportRoomID: 6,
+    tilesKey: 'tiles'
+  },
+  {
+    id: 1,
+    name: 'Blue Board',
+    cols: 5,
+    rows: 7,
+    transportRoomID: 0,
+    tilesKey: 'tiles2'
   }
 ]
 
@@ -236,7 +263,27 @@ let rooms =
       downID: null,
       doorConfig: 17
     }
-    ]
+    ],
+  1: [
+    {
+      id: 0,
+      roomKey: 'level1-0', //json
+      leftID: null,//room id connected to room
+      rightID: 1,
+      upID: null,
+      downID: null,
+      doorConfig: 4
+    },
+    {
+      id: 1,
+      roomKey: 'level1-1', //json
+      leftID: 0,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 8
+    }
+  ]
 }
 
 

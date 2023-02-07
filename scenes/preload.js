@@ -94,7 +94,13 @@ class preloadGame extends Phaser.Scene {
       margin: 1,
       spacing: 1
     });
-    this.load.spritesheet("tiles", "assets/sprites/tiles2.png", {
+    this.load.spritesheet("tiles", "assets/sprites/tiles.png", {
+      frameWidth: 32,
+      frameHeight: 32,
+      margin: 1,
+      spacing: 1
+    });
+    this.load.spritesheet("tiles2", "assets/sprites/tiles2.png", {
       frameWidth: 32,
       frameHeight: 32,
       margin: 1,
@@ -111,6 +117,10 @@ class preloadGame extends Phaser.Scene {
     this.load.spritesheet('boss1', 'assets/sprites/boss1.png', {
       frameWidth: 64,
       frameHeight: 64
+    });
+    this.load.spritesheet('blockspark', 'assets/sprites/blockspark.png', {
+      frameWidth: 48,
+      frameHeight: 48
     });
     this.load.image('menu', 'assets/sprites/menu.png');
     this.load.image('logotitle', 'assets/sprites/logotitle.png');

@@ -37,6 +37,9 @@ class playGame extends Phaser.Scene {
   preload() {
     console.log('current room ' + currentRoom + ', current world ' + currentWorld)
     console.log(rooms[worlds[currentWorld].id][currentRoom].roomKey)
+
+
+
     this.load.tilemapTiledJSON(rooms[worlds[currentWorld].id][currentRoom].roomKey, 'assets/maps/' + rooms[worlds[currentWorld].id][currentRoom].roomKey + '.json')
 
   }
@@ -48,7 +51,7 @@ class playGame extends Phaser.Scene {
     //this.cameras.main.setBackgroundColor(0xAFB0B3);
 
     this.map = this.make.tilemap({ key: rooms[worlds[currentWorld].id][currentRoom].roomKey });
-    this.tiles = this.map.addTilesetImage('tiles', 'tiles');
+    this.tiles = this.map.addTilesetImage(worlds[currentWorld].tilesKey, worlds[currentWorld].tilesKey);
     const layerDec = this.map.createLayer('layer1', this.tiles);
     //this.createAntennas(layerDec)
     layer = this.map.createLayer('layer0', this.tiles);
@@ -56,7 +59,7 @@ class playGame extends Phaser.Scene {
 
 
     // const layer2 = map2.createLayer(0, tiles, 0, 0);
-    layer.setCollisionByExclusion([-1, switchFrame, upgradeTopFrame, hBeamFrame, upgradePowerFrame, upgradeBeamFrame, upgradeBombFrame, upgradeLongFrame, upgradeBodyFrame, upgrade3Frame, upgradeTeleportFrame, switchBlockFrame, questionFrame, oneWayUpFrame, doorLFrame, doorRFrame, doorUFrame, doorDFrame, keyFrame, controlFrame, sparkFrame, oneWayDownFrame, lavaFrame, oneWayLeftFrame, oneWayRightFrame, collapseFrame, hPlatformFrame, launchUpFrameUp, launchUpFrameRight, launchUpFrameLeft, beamFrame, bombBlockFrame]);
+    layer.setCollisionByExclusion([-1, switchFrame, blockSparkFrame, reappearFrame, to0TransportFrame, to1TransportFrame, to2TransportFrame, to3TransportFrame, to4TransportFrame, to5TransportFrame, upgradeTopFrame, hBeamFrame, upgradePowerFrame, upgradeBeamFrame, upgradeBombFrame, upgradeLongFrame, upgradeBodyFrame, upgrade3Frame, upgradeTeleportFrame, switchBlockFrame, questionFrame, oneWayUpFrame, doorLFrame, doorRFrame, doorUFrame, doorDFrame, keyFrame, controlFrame, sparkUpFrame, sparkDownFrame, sparkLeftFrame, sparkRightFrame, oneWayDownFrame, lavaFrame, oneWayLeftFrame, oneWayRightFrame, collapseFrame, hPlatformFrame, launchUpFrameUp, launchUpFrameRight, launchUpFrameLeft, beamFrame, bombBlockFrame]);
 
 
     this.createOneWay(layer)
@@ -74,6 +77,8 @@ class playGame extends Phaser.Scene {
     this.createSwitchBlocks(layer)
     this.createQuestions(layer)
     this.createUpgrader(layer)
+    this.createTransports(layer)
+    this.createReappear(layer)
 
 
     this.thinglayer = this.map.getObjectLayer('things')['objects'];
@@ -104,14 +109,14 @@ class playGame extends Phaser.Scene {
       immovable: true
     });
     powerupGroup = this.physics.add.group({
-      defaultKey: 'tiles',
+      defaultKey: worlds[currentWorld].tilesKey,
       defaultFrame: 84,
       maxSize: 30,
       allowGravity: false,
       immovable: true
     });
     lavaBall = this.physics.add.group({
-      defaultKey: 'tiles',
+      defaultKey: worlds[currentWorld].tilesKey,
       defaultFrame: lavaBallFrame,
       maxSize: 30,
       allowGravity: false,
@@ -158,12 +163,15 @@ class playGame extends Phaser.Scene {
     this.physics.add.collider(player.sprite, collapsingBlocks, this.shakeBlock, this.checkOneWay, this);
     this.physics.add.collider(player.sprite, hPlatforms);
     this.physics.add.overlap(player.sprite, launchers, this.launchPlayer, null, this);
+    this.physics.world.addCollider(player.sprite, reappearBlocks);
 
+    //this.physics.add.collider(player.sprite, bombBlocks);
 
 
 
     this.physics.add.overlap(player.sprite, powerupGroup, this.collectObject, null, this);
     this.physics.add.overlap(player.sprite, upgrades, this.hitUpgrade, null, this);
+    this.physics.add.overlap(player.sprite, transports, this.hitTransport, null, this);
     if (!roomComplete()) {
       this.physics.add.overlap(player.sprite, keys, this.collectObject, null, this);
       this.physics.add.overlap(player.sprite, lavas, this.hitLava, null, this);
@@ -940,6 +948,25 @@ class playGame extends Phaser.Scene {
       });
     }
   }
+  hitTransport(playerobj, transport) {
+
+    if (player.roll && Math.abs(player.sprite.x - transport.x) < 2) {
+      if (transport.to == 0) {
+        currentWorld = transport.to
+        currentRoom = worlds[currentWorld].transportRoomID
+      } else if (transport.to == 1) {
+        currentWorld = 1
+        currentRoom = worlds[currentWorld].transportRoomID
+      }
+      player.sprite.disableBody(false, false);
+      this.input.enabled = false
+      console.log('current room ' + currentRoom + ', current world ' + currentWorld)
+      setTimeout(() => {
+        this.scene.restart();
+      }, 150);
+    }
+
+  }
   hitDoor(player, door) {
     //console.log(door)
 
@@ -1073,7 +1100,7 @@ class playGame extends Phaser.Scene {
   }
   createQuestions(layer) {
     questions = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(questionFrame, 0, { key: 'tiles', frame: questionFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(questionFrame, 0, { key: worlds[currentWorld].tilesKey, frame: questionFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1084,28 +1111,28 @@ class playGame extends Phaser.Scene {
   createOneWay(layer) {
 
     oneWayBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(oneWayUpFrame, 0, { key: 'tiles', frame: oneWayUpFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(oneWayUpFrame, 0, { key: worlds[currentWorld].tilesKey, frame: oneWayUpFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
       sprites[i].kind = 'up'
       oneWayBlocks.add(sprites[i])
     }
-    var sprites = this.map.createFromTiles(oneWayDownFrame, 0, { key: 'tiles', frame: oneWayDownFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(oneWayDownFrame, 0, { key: worlds[currentWorld].tilesKey, frame: oneWayDownFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
       sprites[i].kind = 'down'
       oneWayBlocks.add(sprites[i])
     }
-    var sprites = this.map.createFromTiles(oneWayLeftFrame, 0, { key: 'tiles', frame: oneWayLeftFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(oneWayLeftFrame, 0, { key: worlds[currentWorld].tilesKey, frame: oneWayLeftFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
       sprites[i].kind = 'left'
       oneWayBlocks.add(sprites[i])
     }
-    var sprites = this.map.createFromTiles(oneWayRightFrame, 0, { key: 'tiles', frame: oneWayRightFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(oneWayRightFrame, 0, { key: worlds[currentWorld].tilesKey, frame: oneWayRightFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1115,7 +1142,7 @@ class playGame extends Phaser.Scene {
   }
   createCollapse(layer) {
     collapsingBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(collapseFrame, 0, { key: 'tiles', frame: collapseFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(collapseFrame, 0, { key: worlds[currentWorld].tilesKey, frame: collapseFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1125,7 +1152,7 @@ class playGame extends Phaser.Scene {
   }
   createReappear(layer) {
     reappearBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(reappearFrame, 0, { key: 'tiles', frame: reappearFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(reappearFrame, 0, { key: worlds[currentWorld].tilesKey, frame: reappearFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1135,7 +1162,7 @@ class playGame extends Phaser.Scene {
   }
   createSwitchBlocks(layer) {
     switchBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(switchBlockFrame, 0, { key: 'tiles', frame: switchBlockFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(switchBlockFrame, 0, { key: worlds[currentWorld].tilesKey, frame: switchBlockFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1145,7 +1172,7 @@ class playGame extends Phaser.Scene {
   }
   createLaunchers(layer) {
     launchers = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(launchUpFrameUp, 0, { key: 'tiles', frame: launchUpFrameUp }, null, null, layer)
+    var sprites = this.map.createFromTiles(launchUpFrameUp, 0, { key: worlds[currentWorld].tilesKey, frame: launchUpFrameUp }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1155,7 +1182,7 @@ class playGame extends Phaser.Scene {
   }
   createBombBlocks(layer) {
     bombBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(bombBlockFrame, 0, { key: 'tiles', frame: bombBlockFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(bombBlockFrame, 0, { key: worlds[currentWorld].tilesKey, frame: bombBlockFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1166,7 +1193,7 @@ class playGame extends Phaser.Scene {
   createControls(layer) {
     this.anims.create({
       key: "layer-antenna",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: [60, 61, 62, 63] }),
+      frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: [60, 61, 62, 63] }),
       frameRate: 8,
       repeat: -1
     });
@@ -1177,13 +1204,13 @@ class playGame extends Phaser.Scene {
     } else {
       var f = controlFrame
     }
-    var sprites = this.map.createFromTiles(controlFrame, 0, { key: 'tiles', frame: f }, null, null, layer)
+    var sprites = this.map.createFromTiles(controlFrame, 0, { key: worlds[currentWorld].tilesKey, frame: f }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
       sprites[i].state = 'off'
       sprites[i].id = i
-      var ant = this.add.sprite(sprites[i].x, sprites[i].y - this.map.tileHeight, 'tiles', antennaFrame).setDepth(2)
+      var ant = this.add.sprite(sprites[i].x, sprites[i].y - this.map.tileHeight, worlds[currentWorld].tilesKey, antennaFrame).setDepth(2)
       ant.id = i
       sprites[i].antenna = ant
       if (roomComplete()) {
@@ -1200,12 +1227,12 @@ class playGame extends Phaser.Scene {
   createAntennas(layer) {
     this.anims.create({
       key: "layer-antenna",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: [60, 61, 62, 63] }),
+      frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: [60, 61, 62, 63] }),
       frameRate: 8,
       repeat: -1
     });
     antennas = this.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(antennaFrame, 0, { key: 'tiles', frame: antennaFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(antennaFrame, 0, { key: worlds[currentWorld].tilesKey, frame: antennaFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1218,7 +1245,7 @@ class playGame extends Phaser.Scene {
   }
   createSwitches(layer) {
     switches = this.physics.add.group({ allowGravity: false, immovable: true });
-    var sprites = this.map.createFromTiles(switchFrame, 0, { key: 'tiles', frame: switchFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(switchFrame, 0, { key: worlds[currentWorld].tilesKey, frame: switchFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1264,13 +1291,13 @@ class playGame extends Phaser.Scene {
       this.anims.create({
 
         key: "layer-lava",
-        frames: this.anims.generateFrameNumbers('tiles', { frames: [46, 47, 48] }),
+        frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: [46, 47, 48] }),
         frameRate: 8,
         repeat: -1
       });
       lavas = this.physics.add.group({ allowGravity: false, immovable: true });
 
-      var sprites = this.map.createFromTiles(lavaFrame, 0, { key: 'tiles', frame: lavaFrame }, null, null, layer)//lavaframes[Phaser.Math.Between(0, 2)]
+      var sprites = this.map.createFromTiles(lavaFrame, 0, { key: worlds[currentWorld].tilesKey, frame: lavaFrame }, null, null, layer)//lavaframes[Phaser.Math.Between(0, 2)]
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1293,12 +1320,12 @@ class playGame extends Phaser.Scene {
     if (!roomComplete()) {
       this.anims.create({
         key: "layer-beam",
-        frames: this.anims.generateFrameNumbers('tiles', { frames: [22, 26, 23] }),
+        frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: [22, 26, 23] }),
         frameRate: 8,
         repeat: -1
       });
       beams = this.physics.add.group({ allowGravity: false, immovable: true });
-      var sprites = this.map.createFromTiles(beamFrame, 0, { key: 'tiles', frame: beamFrame }, null, null, layer)
+      var sprites = this.map.createFromTiles(beamFrame, 0, { key: worlds[currentWorld].tilesKey, frame: beamFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1311,12 +1338,12 @@ class playGame extends Phaser.Scene {
         ////////////////////////////////////////
         this.anims.create({
           key: "layer-beam-h",
-          frames: this.anims.generateFrameNumbers('tiles', { frames: [96, 97, 98] }),
+          frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: [96, 97, 98] }),
           frameRate: 8,
           repeat: -1
         });
 
-        var sprites = this.map.createFromTiles(hBeamFrame, 0, { key: 'tiles', frame: hBeamFrame }, null, null, layer)
+        var sprites = this.map.createFromTiles(hBeamFrame, 0, { key: worlds[currentWorld].tilesKey, frame: hBeamFrame }, null, null, layer)
         for (var i = 0; i < sprites.length; i++) {
           sprites[i].x += (this.map.tileWidth / 2)
           sprites[i].y += (this.map.tileHeight / 2)
@@ -1343,13 +1370,13 @@ class playGame extends Phaser.Scene {
     if (!roomComplete()) {
       this.anims.create({
         key: "layer-lavaball",
-        frames: this.anims.generateFrameNumbers('tiles', { frames: [86, 87, 88, 89] }),
+        frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: [86, 87, 88, 89] }),
         frameRate: 8,
         repeat: -1
       });
 
       lavaLaunchers = this.physics.add.group({ allowGravity: false, immovable: true });
-      var sprites = this.map.createFromTiles(lavaLauncherFrame, 0, { key: 'tiles', frame: lavaLauncherFrame }, null, null, layer)
+      var sprites = this.map.createFromTiles(lavaLauncherFrame, 0, { key: worlds[currentWorld].tilesKey, frame: lavaLauncherFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1399,34 +1426,161 @@ class playGame extends Phaser.Scene {
   }
   createSparks(layer) {
     if (!roomComplete()) {
+      sparks = this.physics.add.group({ allowGravity: false, immovable: true });
+      //up
       this.anims.create({
         key: "layer-spark",
-        frames: this.anims.generateFrameNumbers('tiles', { frames: [0, 17, 18, 19] }),
+        frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: sparkUpFrames }),
         frameRate: 12,
         repeat: -1
       });
-      sparks = this.physics.add.group({ allowGravity: false, immovable: true });
-      var sprites = this.map.createFromTiles(sparkFrame, 0, { key: 'tiles', frame: sparkFrame }, null, null, layer)
+
+      var sprites = this.map.createFromTiles(sparkUpFrame, 0, { key: worlds[currentWorld].tilesKey, frame: sparkUpFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
         sprites[i].setDepth(3)
         sprites[i].damage = 4
+        sprites[i].kind = 'up'
+        sparks.add(sprites[i])
+
+      }
+      //sparks.playAnimation('layer-spark')
+
+      //down
+      this.anims.create({
+        key: "layer-spark-down",
+        frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: sparkDownFrames }),
+        frameRate: 12,
+        repeat: -1
+      });
+
+      var sprites = this.map.createFromTiles(sparkDownFrame, 0, { key: worlds[currentWorld].tilesKey, frame: sparkDownFrames }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].setDepth(3)
+        sprites[i].damage = 4
+        sprites[i].kind = 'down'
+        sparks.add(sprites[i])
+
+      }
+      //left
+      this.anims.create({
+        key: "layer-spark-left",
+        frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: sparkLeftFrames }),
+        frameRate: 12,
+        repeat: -1
+      });
+
+      var sprites = this.map.createFromTiles(sparkLeftFrame, 0, { key: worlds[currentWorld].tilesKey, frame: sparkLeftFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].setDepth(3)
+        sprites[i].damage = 4
+        sprites[i].kind = 'left'
+        sparks.add(sprites[i])
+
+      }
+      //right
+      this.anims.create({
+        key: "layer-spark-right",
+        frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: sparkRightFrames }),
+        frameRate: 12,
+        repeat: -1
+      });
+
+      var sprites = this.map.createFromTiles(sparkRightFrame, 0, { key: worlds[currentWorld].tilesKey, frame: sparkRightFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].setDepth(3)
+        sprites[i].damage = 4
+        sprites[i].kind = 'right'
+        sparks.add(sprites[i])
+
+      }
+      //block
+      this.anims.create({
+        key: "layer-spark-block",
+        frames: this.anims.generateFrameNumbers('blockspark', { frames: blockSparkFrames }),
+        frameRate: 12,
+        repeat: -1
+      });
+
+      var sprites = this.map.createFromTiles(blockSparkFrame, 0, { key: worlds[currentWorld].tilesKey, frame: blockSparkFrame }, null, null, layer)
+      for (var i = 0; i < sprites.length; i++) {
+        sprites[i].x += (this.map.tileWidth / 2)
+        sprites[i].y += (this.map.tileHeight / 2)
+        sprites[i].setDepth(3)
+        sprites[i].damage = 4
+        sprites[i].kind = 'block'
         sparks.add(sprites[i])
 
       }
       //sparks.playAnimation('layer-spark')
       Phaser.Actions.Call(sparks.getChildren(), child => {
-        child.body.setSize(15, 9).setOffset(8, 23)
-        child.anims.play('layer-spark', true);
+        if (child.kind == 'up') {
+
+          child.body.setSize(15, 9).setOffset(8, 15)
+          child.anims.play('layer-spark', true);
+        } else if (child.kind == 'down') {
+
+          child.body.setSize(15, 9).setOffset(8, 9)
+          child.anims.play('layer-spark-down', true);
+        } else if (child.kind == 'left') {
+
+          child.body.setSize(9, 15).setOffset(9, 8)
+          child.anims.play('layer-spark-left', true);
+        } else if (child.kind == 'right') {
+
+          child.body.setSize(9, 15).setOffset(8, 9)
+          child.anims.play('layer-spark-right', true);
+        } else if (child.kind == 'block') {
+
+          child.body.setSize(48, 48).setOffset(0, 0)
+          child.anims.play('layer-spark-block', true);
+        }
+
       });
     } else {
-      this.map.replaceByIndex(sparkFrame, 0)
+      this.map.replaceByIndex(sparkUpFrame, 0)
+      this.map.replaceByIndex(sparkDownFrame, 0)
+      this.map.replaceByIndex(sparkLeftFrame, 0)
+      this.map.replaceByIndex(sparkRightFrame, 0)
+      this.map.replaceByIndex(blockSparkFrame, blockSparkFrame)
     }
 
 
 
 
+  }
+  createTransports(layer) {
+    /*     let to0TransportFrame = 150
+    let to1TransportFrame = 151
+    let to2TransportFrame = 152
+    let to3TransportFrame = 160
+    let to4TransportFrame = 161
+    let to5TransportFrame = 162 */
+    transports = this.physics.add.group({ allowGravity: false, immovable: true });
+    //to 0
+    var sprites = this.map.createFromTiles(to0TransportFrame, 0, { key: worlds[currentWorld].tilesKey, frame: to0TransportFrame }, null, null, layer)
+    for (var i = 0; i < sprites.length; i++) {
+      sprites[i].x += (this.map.tileWidth / 2)
+      sprites[i].y += (this.map.tileHeight / 2)
+      sprites[i].to = 0
+      transports.add(sprites[i])
+    }
+    ////////////
+    //to 1
+    var sprites = this.map.createFromTiles(to1TransportFrame, 0, { key: worlds[currentWorld].tilesKey, frame: to1TransportFrame }, null, null, layer)
+    for (var i = 0; i < sprites.length; i++) {
+      sprites[i].x += (this.map.tileWidth / 2)
+      sprites[i].y += (this.map.tileHeight / 2)
+      sprites[i].to = 1
+      transports.add(sprites[i])
+    }
   }
   createUpgrader(layer) {
     /*     let upgradePowerFrame = 103
@@ -1442,12 +1596,12 @@ class playGame extends Phaser.Scene {
 
     this.anims.create({
       key: "layer-upgrade-top",
-      frames: this.anims.generateFrameNumbers('tiles', { frames: upgradeTopAnim }),
+      frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: upgradeTopAnim }),
       frameRate: 8,
       repeat: -1
     });
     /////////////
-    var sprites = this.map.createFromTiles(upgradeTopFrame, 0, { key: 'tiles', frame: upgradeTopFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(upgradeTopFrame, 0, { key: worlds[currentWorld].tilesKey, frame: upgradeTopFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1455,7 +1609,7 @@ class playGame extends Phaser.Scene {
     }
     ////////////////////
     if (!playerData.hasGun) {
-      var sprites = this.map.createFromTiles(upgradeBeamFrame, 0, { key: 'tiles', frame: upgradeBeamFrame }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeBeamFrame, 0, { key: worlds[currentWorld].tilesKey, frame: upgradeBeamFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1463,7 +1617,7 @@ class playGame extends Phaser.Scene {
         upgrades.add(sprites[i])
       }
     } else if (playerData.hasGun) {
-      var sprites = this.map.createFromTiles(upgradeBeamFrame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeBeamFrame, 0, { key: worlds[currentWorld].tilesKey, frame: 101 }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1472,7 +1626,7 @@ class playGame extends Phaser.Scene {
     }
     ///////////////////////////////////////
     if (!playerData.hasBomb) {
-      var sprites = this.map.createFromTiles(upgradeBombFrame, 0, { key: 'tiles', frame: upgradeBombFrame }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeBombFrame, 0, { key: worlds[currentWorld].tilesKey, frame: upgradeBombFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1480,7 +1634,7 @@ class playGame extends Phaser.Scene {
         upgrades.add(sprites[i])
       }
     } else if (playerData.hasBomb) {
-      var sprites = this.map.createFromTiles(upgradeBombFrame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeBombFrame, 0, { key: worlds[currentWorld].tilesKey, frame: 101 }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1489,7 +1643,7 @@ class playGame extends Phaser.Scene {
     }
     ///////////////////////////////////////
     if (!playerData.hasLong) {
-      var sprites = this.map.createFromTiles(upgradeLongFrame, 0, { key: 'tiles', frame: upgradeLongFrame }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeLongFrame, 0, { key: worlds[currentWorld].tilesKey, frame: upgradeLongFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1497,7 +1651,7 @@ class playGame extends Phaser.Scene {
         upgrades.add(sprites[i])
       }
     } else if (playerData.hasLong) {
-      var sprites = this.map.createFromTiles(upgradeLongFrame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeLongFrame, 0, { key: worlds[currentWorld].tilesKey, frame: 101 }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1506,7 +1660,7 @@ class playGame extends Phaser.Scene {
     }
     ///////////////////////////////////////
     if (!playerData.hasbody) {
-      var sprites = this.map.createFromTiles(upgradeBodyFrame, 0, { key: 'tiles', frame: upgradeBodyFrame }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeBodyFrame, 0, { key: worlds[currentWorld].tilesKey, frame: upgradeBodyFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1514,7 +1668,7 @@ class playGame extends Phaser.Scene {
         upgrades.add(sprites[i])
       }
     } else if (playerData.hasbody) {
-      var sprites = this.map.createFromTiles(upgradeBodyFrame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgradeBodyFrame, 0, { key: worlds[currentWorld].tilesKey, frame: 101 }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1523,7 +1677,7 @@ class playGame extends Phaser.Scene {
     }
     ///////////////////////////////////////
     if (!playerData.has3Way) {
-      var sprites = this.map.createFromTiles(upgrade3Frame, 0, { key: 'tiles', frame: upgrade3Frame }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgrade3Frame, 0, { key: worlds[currentWorld].tilesKey, frame: upgrade3Frame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1531,7 +1685,7 @@ class playGame extends Phaser.Scene {
         upgrades.add(sprites[i])
       }
     } else if (playerData.has3Way) {
-      var sprites = this.map.createFromTiles(upgrade3Frame, 0, { key: 'tiles', frame: 101 }, null, null, layer)
+      var sprites = this.map.createFromTiles(upgrade3Frame, 0, { key: worlds[currentWorld].tilesKey, frame: 101 }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
@@ -1541,7 +1695,7 @@ class playGame extends Phaser.Scene {
 
     ///////////////////////////////////////
 
-    var sprites = this.map.createFromTiles(upgradePowerFrame, 0, { key: 'tiles', frame: upgradePowerFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(upgradePowerFrame, 0, { key: worlds[currentWorld].tilesKey, frame: upgradePowerFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1557,7 +1711,7 @@ class playGame extends Phaser.Scene {
     doors = this.physics.add.group({ allowGravity: false, immovable: true });
 
     //left door 1
-    var sprites = this.map.createFromTiles(doorLFrame, 0, { key: 'tiles', frame: doorLFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(doorLFrame, 0, { key: worlds[currentWorld].tilesKey, frame: doorLFrame }, null, null, layer)
 
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
@@ -1571,7 +1725,7 @@ class playGame extends Phaser.Scene {
     }
 
     //right door 1
-    var sprites = this.map.createFromTiles(doorRFrame, 0, { key: 'tiles', frame: doorRFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(doorRFrame, 0, { key: worlds[currentWorld].tilesKey, frame: doorRFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1584,7 +1738,7 @@ class playGame extends Phaser.Scene {
 
 
     //up door 1
-    var sprites = this.map.createFromTiles(doorUFrame, 0, { key: 'tiles', frame: doorUFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(doorUFrame, 0, { key: worlds[currentWorld].tilesKey, frame: doorUFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1594,7 +1748,7 @@ class playGame extends Phaser.Scene {
       doors.add(sprites[i])
     }
     //down door 1
-    var sprites = this.map.createFromTiles(doorDFrame, 0, { key: 'tiles', frame: doorDFrame }, null, null, layer)
+    var sprites = this.map.createFromTiles(doorDFrame, 0, { key: worlds[currentWorld].tilesKey, frame: doorDFrame }, null, null, layer)
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1621,7 +1775,7 @@ class playGame extends Phaser.Scene {
   /* createKeys() {
     keys = this.physics.add.group({ allowGravity: false, immovable: true });
  
-    var sprites = this.map.createFromTiles(keyFrame, 0, { key: 'tiles', frame: keyFrame }, null, null, layer)//lavaframes[Phaser.Math.Between(0, 2)]
+    var sprites = this.map.createFromTiles(keyFrame, 0, { key: worlds[currentWorld].tilesKey, frame: keyFrame }, null, null, layer)//lavaframes[Phaser.Math.Between(0, 2)]
     for (var i = 0; i < sprites.length; i++) {
       sprites[i].x += (this.map.tileWidth / 2)
       sprites[i].y += (this.map.tileHeight / 2)
@@ -1637,7 +1791,7 @@ class playGame extends Phaser.Scene {
       if (this.thinglayer[i].name == 'Key') {
         // console.log(this.thinglayer[i])
         var worldXY = this.map.tileToWorldXY(this.thinglayer[i].x, this.thinglayer[i].y + 1)
-        var key = keys.create(worldXY.x + (this.map.tileWidth / 2), worldXY.y - (this.map.tileHeight / 2), 'tiles', keyFrame)//99
+        var key = keys.create(worldXY.x + (this.map.tileWidth / 2), worldXY.y - (this.map.tileHeight / 2), worlds[currentWorld].tilesKey, keyFrame)//99
         key.type = this.thinglayer[i].name
         key.id = this.keyCount
         key.setOrigin(.5, .5);

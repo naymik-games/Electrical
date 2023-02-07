@@ -11,8 +11,9 @@ class Runner extends Phaser.Scene {
     this.gameSpeed = 5;
     this.respawnTime = 0;
     this.coinTime = 0
+    this.respawnTimePlat = 0;
     this.isGameRunning = true;
-    this.ground = this.add.tileSprite(0, height, width, 32, 'ground').setOrigin(0, 1)
+    // this.ground = this.add.tileSprite(0, height, width, 32, 'ground').setOrigin(0, 1)
     this.ceiling = this.add.tileSprite(0, 600, width, 87, 'logotitle').setOrigin(0, 1)
 
 
@@ -52,6 +53,8 @@ class Runner extends Phaser.Scene {
 
     this.physics.add.existing(this.groundBody);
     this.groundBody.body.setImmovable(true)
+
+    this.platforms = this.physics.add.group();
 
     this.obsticles = this.physics.add.group();
     this.coins = this.physics.add.group();
@@ -122,11 +125,26 @@ class Runner extends Phaser.Scene {
     if (!this.isGameRunning) { return; }
 
 
-    this.ground.tilePositionX += this.gameSpeed;
+    // this.ground.tilePositionX += this.gameSpeed;
     this.ceiling.tilePositionX += this.gameSpeed - 2;
     Phaser.Actions.IncX(this.environment.getChildren(), - 0.5);
     Phaser.Actions.IncX(this.obsticles.getChildren(), -this.gameSpeed);
     Phaser.Actions.IncX(this.coins.getChildren(), -this.gameSpeed);
+    Phaser.Actions.IncX(this.platforms.getChildren(), -this.gameSpeed);
+
+    this.respawnTimePlat += delta * this.gameSpeed;
+    if (this.respawnTimePlat >= 1250) {
+      this.placePlatform();
+      this.respawnTimePlat = 0;
+    }
+
+    this.platforms.getChildren().forEach(platform => {
+      if (platform.getBounds().right < 0) {
+        this.platforms.killAndHide(platform);
+      }
+    })
+
+
     this.respawnTime += delta * this.gameSpeed * 0.08;
     if (this.respawnTime >= 1250) {
       this.placeObsticle();
@@ -359,6 +377,14 @@ class Runner extends Phaser.Scene {
     coin = this.coins.create(game.config.width + distance, game.config.height - enemyHeight[Math.floor(Math.random() * 3)], 'tiles', 24)
       .setOrigin(0, 1);
     coin.setImmovable();
+  }
+  placePlatform() {
+    const distance = Phaser.Math.Between(600, 900);
+    const enemyHeight = [96, 128, 160];
+    let platform;
+    platform = this.platforms.create(game.config.width, game.config.height, 'tiles', 20)
+      .setOrigin(0, 1);
+    platform.setImmovable();
   }
   placeObsticle() {
     // const obsticleNum = Math.floor(Math.random() * 7) + 1;
