@@ -156,7 +156,10 @@ class Verticle extends Phaser.Scene {
 
     // horizontal position
     platform.x = game.config.width / 2 + this.randomValue(gameOptions.platformHorizontalDistanceRange) * Phaser.Math.RND.sign();
-    this.placeCoin(platform.x, platform.y)
+    if (Phaser.Math.Between(0, 1) == 0) {
+      this.placeCoin(platform.x, platform.y)
+    }
+
     // platform width
     var ran = Phaser.Math.Between(0, gameOptions.platformWidth.length - 1)
     gameOptions.platformWidth[ran]

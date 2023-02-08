@@ -269,7 +269,7 @@ let rooms =
   1: [
     {
       id: 0,
-      roomKey: 'level1-0', //json
+      roomKey: 'level1-0', //json DONE
       leftID: null,//room id connected to room
       rightID: 1,
       upID: null,
@@ -278,12 +278,84 @@ let rooms =
     },
     {
       id: 1,
-      roomKey: 'level1-1', //json
+      roomKey: 'level1-1', //json DONE
       leftID: 0,//room id connected to room
-      rightID: null,
+      rightID: 2,
       upID: null,
       downID: null,
       doorConfig: 8
+    },
+    {
+      id: 2,
+      roomKey: 'level1-2', //json DONE
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: 7,
+      doorConfig: 16
+    },
+    {
+      id: 3,
+      roomKey: 'level1-3', //json
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 4,
+      roomKey: 'level1-4', //json DONE
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 5,
+      roomKey: 'level1-5', //json 
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 6,
+      roomKey: 'level1-6', //jso
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 7,
+      roomKey: 'level1-7', //json DONE
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 10
+    },
+    {
+      id: 8,
+      roomKey: 'level1-8', //json DONE
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 9,
+      roomKey: 'level1-9', //json DONE
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
     }
   ]
 }

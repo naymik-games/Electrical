@@ -37,7 +37,7 @@ class playGame extends Phaser.Scene {
   preload() {
     console.log('current room ' + currentRoom + ', current world ' + currentWorld)
     console.log(rooms[worlds[currentWorld].id][currentRoom].roomKey)
-
+    console.log(worlds[currentWorld].tilesKey)
 
 
     this.load.tilemapTiledJSON(rooms[worlds[currentWorld].id][currentRoom].roomKey, 'assets/maps/' + rooms[worlds[currentWorld].id][currentRoom].roomKey + '.json')
@@ -148,7 +148,8 @@ class playGame extends Phaser.Scene {
 
     this.physics.add.existing(bombBody);
 
-
+    this.beamActive = true
+    this.blockSpark = true
     this.collectUpgrade = false
 
     this.buildTouchSlider();
@@ -156,6 +157,7 @@ class playGame extends Phaser.Scene {
     this.physics.world.addCollider(player.sprite, layer, function () {
       player.launched = false
       player.sprite.body.setGravityY(800);
+      player.sprite.setMaxVelocity(200, 400)
     }, null, this);
     this.physics.add.collider(player.sprite, oneWayBlocks, null, this.checkOneWay, this);
     this.physics.add.collider(player.sprite, bombBlocks);
@@ -191,7 +193,8 @@ class playGame extends Phaser.Scene {
     this.physics.add.overlap(bombBody, enemies, this.bombHitEnemy, null, this);
 
 
-    this.physics.add.collider(hPlatforms, layer);
+    this.physics.world.addCollider(hPlatforms, layer);
+    this.physics.world.addCollider(hPlatforms, hPlatforms)
 
     this.physics.add.collider(powerupGroup, layer);
 
@@ -451,8 +454,23 @@ class playGame extends Phaser.Scene {
   launchPlayer(playersprite, launcher) {
     if (!player.launched) {
       player.launched = true
-      player.sprite.body.setGravityY(100);
-      player.sprite.body.setVelocityY(-800);
+      if (launcher.kind == 'up') {
+        player.sprite.body.setGravityY(100);
+        player.sprite.body.setVelocityY(-800);
+      } else if (launcher.kind == 'left') {
+        //player.sprite.body.setGravityY(100);
+        player.sprite.body.setVelocityY(-200);
+        player.sprite.setMaxVelocity(1000, 400)
+        //player.sprite.body.setAccelerationX(-acceleration);
+        player.sprite.body.setVelocityX(-1000);
+      } else if (launcher.kind == 'right') {
+        //player.sprite.body.setGravityY(100);
+        player.sprite.body.setVelocityY(-200);
+        player.sprite.setMaxVelocity(1000, 400)
+        //player.sprite.body.setAccelerationX(-acceleration);
+        player.sprite.body.setVelocityX(1000);
+      }
+
     }
   }
   moveLeft(acceleration) {
@@ -482,16 +500,22 @@ class playGame extends Phaser.Scene {
   // COLLISIONS
   /////////////////////////////////////////////////////////////////////////
   hitBeam(playersprite, beam) {
-    player.playerHit(-10)
+    if (this.beamActive) {
+      player.playerHit(-10)
+    }
+
   }
   hitLava(playersprite, lava) {
     player.playerHit(-10)
   }
   hitSpark(playersprite, spark) {
     player.playerHit(-10)
+
   }
   hitBlockSpark(playersprite, spark) {
-    player.playerHit(-10)
+    if (this.blockSpark) {
+      player.playerHit(-10)
+    }
   }
   hitLavaBall(playersprite, ball) {
     player.playerHit(-10)
@@ -1189,6 +1213,20 @@ class playGame extends Phaser.Scene {
       sprites[i].kind = 'up'
       launchers.add(sprites[i])
     }
+    var sprites = this.map.createFromTiles(launchUpFrameLeft, 0, { key: worlds[currentWorld].tilesKey, frame: launchUpFrameLeft }, null, null, layer)
+    for (var i = 0; i < sprites.length; i++) {
+      sprites[i].x += (this.map.tileWidth / 2)
+      sprites[i].y += (this.map.tileHeight / 2)
+      sprites[i].kind = 'left'
+      launchers.add(sprites[i])
+    }
+    var sprites = this.map.createFromTiles(launchUpFrameRight, 0, { key: worlds[currentWorld].tilesKey, frame: launchUpFrameRight }, null, null, layer)
+    for (var i = 0; i < sprites.length; i++) {
+      sprites[i].x += (this.map.tileWidth / 2)
+      sprites[i].y += (this.map.tileHeight / 2)
+      sprites[i].kind = 'right'
+      launchers.add(sprites[i])
+    }
   }
   createBombBlocks(layer) {
     bombBlocks = this.physics.add.group({ allowGravity: false, immovable: true });
@@ -1327,7 +1365,9 @@ class playGame extends Phaser.Scene {
     //sparks.playAnimation('layer-spark')
   }
   createBeams(layer) {
+
     if (!roomComplete()) {
+
       this.anims.create({
         key: "layer-beam",
         frames: this.anims.generateFrameNumbers(worlds[currentWorld].tilesKey, { frames: [22, 26, 23] }),
@@ -1337,6 +1377,7 @@ class playGame extends Phaser.Scene {
       beams = this.physics.add.group({ allowGravity: false, immovable: true });
       var sprites = this.map.createFromTiles(beamFrame, 0, { key: worlds[currentWorld].tilesKey, frame: beamFrame }, null, null, layer)
       for (var i = 0; i < sprites.length; i++) {
+
         sprites[i].x += (this.map.tileWidth / 2)
         sprites[i].y += (this.map.tileHeight / 2)
         sprites[i].setDepth(3)
@@ -1364,7 +1405,16 @@ class playGame extends Phaser.Scene {
           sprites[i].anims.play('layer-beam-h', true);
         }
       }
+
+      var beamtime = this.time.addEvent({
+        delay: 3000,                // ms
+        callback: this.toggleBeam,
+        callbackScope: this,
+        repeat: -1
+      });
+
     } else {
+
       this.map.replaceByIndex(beamFrame, 0)
       this.map.replaceByIndex(hBeamFrame, 0)
     }
@@ -1375,6 +1425,20 @@ class playGame extends Phaser.Scene {
         }); */
 
 
+  }
+  toggleBeam() {
+    if (this.beamActive) {
+      this.beamActive = false
+      Phaser.Actions.Call(beams.getChildren(), child => {
+        child.setAlpha(0)
+      });
+
+    } else {
+      this.beamActive = true
+      Phaser.Actions.Call(beams.getChildren(), child => {
+        child.setAlpha(1)
+      });
+    }
   }
   createLavaLauncher(layer) {
     if (!roomComplete()) {
@@ -1530,6 +1594,13 @@ class playGame extends Phaser.Scene {
         blockSparks.add(sprites[i])
 
       }
+      var blocktime = this.time.addEvent({
+        delay: 3000,                // ms
+        callback: this.toggleSpark,
+        callbackScope: this,
+        repeat: -1
+      });
+
       //sparks.playAnimation('layer-spark')
       Phaser.Actions.Call(sparks.getChildren(), child => {
         if (child.kind == 'up') {
@@ -1551,7 +1622,7 @@ class playGame extends Phaser.Scene {
         }
       });
       Phaser.Actions.Call(blockSparks.getChildren(), child => {
-        child.body.setSize(32, 32).setOffset(0, 0)
+        child.body.setSize(32, 32).setOffset(8, 8)
         child.anims.play('layer-spark-block', true);
       });
     } else {
@@ -1565,6 +1636,31 @@ class playGame extends Phaser.Scene {
 
 
 
+  }
+  toggleSpark() {
+    if (this.blockSpark) {
+      this.blockSpark = false
+      Phaser.Actions.Call(blockSparks.getChildren(), child => {
+        console.log(child.kind)
+        if (child.kind == 'block') {
+          // child.setAlpha(0)
+          child.anims.pause()
+          // child.anims.currentAnim.getFrameByProgress(0);
+          child.anims.pause(child.anims.currentAnim.frames[0])
+        }
+
+      });
+
+    } else {
+      this.blockSpark = true
+      Phaser.Actions.Call(blockSparks.getChildren(), child => {
+        if (child.kind == 'block') {
+          //child.setAlpha(1)
+          child.anims.resume()
+
+        }
+      });
+    }
   }
   createTransports(layer) {
     /*     let to0TransportFrame = 150
