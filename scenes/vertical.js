@@ -15,6 +15,8 @@ let gameOptions = {
   // platform length range, in pixels
   platformLengthRange: [50, 150],
 
+  platformWidth: ['block1', 'block2', 'block3', 'block4'],
+
   // platform horizontal distance range from the center of the stage, in pixels
   platformHorizontalDistanceRange: [0, 250],
 
@@ -27,26 +29,35 @@ class Verticle extends Phaser.Scene {
   constructor() {
     super('Verticle');
   }
-
+  preload() {
+    this.load.image('block1', 'assets/sprites/block1.png');
+    this.load.image('block2', 'assets/sprites/block2.png');
+    this.load.image('block3', 'assets/sprites/block3.png');
+    this.load.image('block4', 'assets/sprites/block4.png');
+  }
   create() {
     this.cameras.main.setBackgroundColor(0x161616);
     // this.cameras.main.setZoom(1.5)
     console.log('verticle')
     const { height, width } = game.config;
-    this.gameSpeed = 5;
-    this.respawnTime = 0;
+
     this.coinTime = 0
     this.respawnTimePlat = 0;
     this.isGameRunning = true;
     this.firstMove = true
+    this.coinCount = 0
+
     // this.ground = this.add.tileSprite(0, height, width, 32, 'ground').setOrigin(0, 1)
-    this.ceiling = this.add.tileSprite(0, 100, width, 87, 'logotitle').setOrigin(0, 1)
+    // this.ceiling = this.add.tileSprite(0, 100, width, 87, 'logotitle').setOrigin(0, 1)
+
+    this.eText = this.add.text(game.config.width - 100, 35, '0', { fontFamily: 'PixelFont', fontSize: '50px', color: '#fafafa', align: 'left' }).setOrigin(.5).setInteractive()//C6EFD8
+    this.keyIcon = this.add.image(game.config.width - 48, 45, 'tiles', keyFrame).setScale(1.5).setAlpha(1)
 
     this.coins = this.physics.add.group();
     this.platformGroup = this.physics.add.group();
 
     // create starting platform
-    let platform = this.platformGroup.create(game.config.width / 2, game.config.height * gameOptions.firstPlatformPosition, "tiles", 20);
+    let platform = this.platformGroup.create(game.config.width / 2, game.config.height * gameOptions.firstPlatformPosition, "block3");
 
     // platform won't physically react to collisions
     platform.setImmovable(true);
@@ -55,7 +66,7 @@ class Verticle extends Phaser.Scene {
     for (let i = 0; i < 10; i++) {
 
       // platform creation, as a member of platformGroup physics group
-      let platform = this.platformGroup.create(0, 0, "tiles", 20);
+      let platform = this.platformGroup.create(0, 0, 'block1');
 
       // platform won't physically react to collisions
       platform.setImmovable(true);
@@ -87,18 +98,8 @@ class Verticle extends Phaser.Scene {
     this.player = this.physics.add.sprite(game.config.width / 2, (game.config.height * gameOptions.firstPlatformPosition) - 32, 'player').setOrigin(.5, 1).setGravityY(800).setMaxVelocity(200, 600)
     this.player.play('player-run')
     this.player.roll = false
-    //this.cameras.main.startFollow(this.player, true, 0.65, 0, -150, 300);
-
-    /* this.groundBody = this.add.rectangle(0, height - 16, 600, 32, 0x9966ff, 0).setStrokeStyle(1, 0xefc53f);
-
-    this.physics.add.existing(this.groundBody);
-    this.groundBody.body.setImmovable(true)
- */
-    //this.platforms = this.physics.add.group();
 
     /* this.obsticles = this.physics.add.group();*/
-
-
 
     this.gameOverScreen = this.add.container(width / 2, height / 2 - 100).setAlpha(0)
     this.gameOverText = this.add.image(0, 0, 'game-over');
@@ -110,8 +111,8 @@ class Verticle extends Phaser.Scene {
     this.restart.on('pointerdown', () => {
       this.player.setPosition(game.config.width / 2, 0)
       this.player.setVelocityY(0);
-      //   this.dino.body.height = 92;
-      //  this.dino.body.offset.y = 0;
+      this.coinCount = 0
+      this.eText.setText(this.coinCount)
       this.physics.resume();
 
       this.isGameRunning = true;
@@ -127,6 +128,8 @@ class Verticle extends Phaser.Scene {
 
     this.physics.add.overlap(this.player, this.coins, (player, coin) => {
       coin.disableBody(false, false);
+      this.coinCount++
+      this.eText.setText(this.coinCount)
       var tween = this.tweens.add({
         targets: coin,
         alpha: 0.3,
@@ -153,18 +156,34 @@ class Verticle extends Phaser.Scene {
 
     // horizontal position
     platform.x = game.config.width / 2 + this.randomValue(gameOptions.platformHorizontalDistanceRange) * Phaser.Math.RND.sign();
-
-    // platform width
-    platform.displayWidth = this.randomValue(gameOptions.platformLengthRange);
     this.placeCoin(platform.x, platform.y)
+    // platform width
+    var ran = Phaser.Math.Between(0, gameOptions.platformWidth.length - 1)
+    gameOptions.platformWidth[ran]
+    platform.setTexture(gameOptions.platformWidth[ran])
+    if (ran == 0) {
+      platform.body.setSize(32, 32)
+    } else if (ran == 1) {
+      platform.body.setSize(64, 32)
+    } else if (ran == 2) {
+      platform.body.setSize(96, 32)
+    } else if (ran == 3) {
+      platform.body.setSize(128, 32)
+    }
+
   }
   placeCoin(x, y) {
-    console.log('create coin')
+    //console.log('create coin ' + x + ', ' + y)
     const enemyHeight = [25, 50, 100];
     let coin;
     coin = this.coins.create(x, y - enemyHeight[Math.floor(Math.random() * 3)], 'tiles', 24, true, true)
       .setOrigin(0, 1);
     coin.setImmovable();
+    if (!this.firstMove) {
+      coin.setVelocityY(-gameOptions.platformSpeed);
+    }
+
+    console.log(coin)
   }
   getLowestPlatform() {
     let lowestPlatform = 0;
