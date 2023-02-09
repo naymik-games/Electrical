@@ -15,7 +15,7 @@ let gameOptions = {
   // platform length range, in pixels
   platformLengthRange: [50, 150],
 
-  platformWidth: ['block1', 'block2', 'block3', 'block4'],
+  platformWidth: ['block1', 'block2', 'block2', 'block3', 'block3', 'block3', 'block4', 'block4'],
 
   // platform horizontal distance range from the center of the stage, in pixels
   platformHorizontalDistanceRange: [0, 250],
@@ -46,15 +46,22 @@ class Verticle extends Phaser.Scene {
     this.isGameRunning = true;
     this.firstMove = true
     this.coinCount = 0
+    this.score = 0
 
     // this.ground = this.add.tileSprite(0, height, width, 32, 'ground').setOrigin(0, 1)
     // this.ceiling = this.add.tileSprite(0, 100, width, 87, 'logotitle').setOrigin(0, 1)
+    this.header = this.add.image(game.config.width / 2, 0, 'blank').setOrigin(.5, 0).setTint(0x000000).setAlpha(.8).setDepth(1);//0x262626
+    this.header.displayWidth = game.config.width;
+    this.header.displayHeight = 100;
 
-    this.eText = this.add.text(game.config.width - 100, 35, '0', { fontFamily: 'PixelFont', fontSize: '50px', color: '#fafafa', align: 'left' }).setOrigin(.5).setInteractive()//C6EFD8
-    this.keyIcon = this.add.image(game.config.width - 48, 45, 'tiles', keyFrame).setScale(1.5).setAlpha(1)
+    this.eText = this.add.text(game.config.width - 100, 35, '0', { fontFamily: 'PixelFont', fontSize: '50px', color: '#fafafa', align: 'left' }).setOrigin(.5).setInteractive().setDepth(2)//C6EFD8
+    this.keyIcon = this.add.image(game.config.width - 48, 45, 'tiles', keyFrame).setScale(1.5).setAlpha(1).setDepth(2)
+    this.sText = this.add.text(100, 35, '0', { fontFamily: 'PixelFont', fontSize: '50px', color: '#fafafa', align: 'left' }).setOrigin(.5).setDepth(2).setInteractive()//C6EFD8
+    this.sIcon = this.add.image(48, 45, 'block1').setScale(1).setAlpha(1).setDepth(2)
 
     this.coins = this.physics.add.group();
     this.platformGroup = this.physics.add.group();
+    this.sparks = this.physics.add.group();
 
     // create starting platform
     let platform = this.platformGroup.create(game.config.width / 2, game.config.height * gameOptions.firstPlatformPosition, "block3");
@@ -95,6 +102,12 @@ class Verticle extends Phaser.Scene {
       frameRate: 6,
       repeat: 0
     });
+    this.anims.create({
+      key: "spark-anim",
+      frames: this.anims.generateFrameNumbers("spark-up", { start: 0, end: 2 }),
+      frameRate: 6,
+      repeat: 0
+    });
     this.player = this.physics.add.sprite(game.config.width / 2, (game.config.height * gameOptions.firstPlatformPosition) - 32, 'player').setOrigin(.5, 1).setGravityY(800).setMaxVelocity(200, 600)
     this.player.play('player-run')
     this.player.roll = false
@@ -113,6 +126,8 @@ class Verticle extends Phaser.Scene {
       this.player.setVelocityY(0);
       this.coinCount = 0
       this.eText.setText(this.coinCount)
+      this.score = 0
+      this.sText.setText(this.score)
       this.physics.resume();
 
       this.isGameRunning = true;
@@ -147,39 +162,52 @@ class Verticle extends Phaser.Scene {
       });
     }, null, this);
 
+
+    this.physics.add.overlap(this.player, this.sparks, (player, coin) => {
+      this.physics.pause();
+      this.isGameRunning = false;
+      this.anims.pauseAll();
+
+      this.gameOverScreen.setAlpha(1);
+
+    }, null, this);
+
+
+
     this.buildTouchSlider();
   }
   positionPlatform(platform) {
-
+    var ranHeight = this.randomValue(gameOptions.platformVerticalDistanceRange)
     // vertical position
-    platform.y = this.getLowestPlatform() + this.randomValue(gameOptions.platformVerticalDistanceRange);
+    platform.y = this.getLowestPlatform() + ranHeight;
 
     // horizontal position
     platform.x = game.config.width / 2 + this.randomValue(gameOptions.platformHorizontalDistanceRange) * Phaser.Math.RND.sign();
     if (Phaser.Math.Between(0, 1) == 0) {
-      this.placeCoin(platform.x, platform.y)
+      this.placeCoin(platform.x, platform.y, ranHeight)
     }
 
     // platform width
     var ran = Phaser.Math.Between(0, gameOptions.platformWidth.length - 1)
-    gameOptions.platformWidth[ran]
+    // gameOptions.platformWidth[ran]
     platform.setTexture(gameOptions.platformWidth[ran])
-    if (ran == 0) {
+    if (gameOptions.platformWidth[ran] == 'block1') {
       platform.body.setSize(32, 32)
-    } else if (ran == 1) {
+    } else if (gameOptions.platformWidth[ran] == 'block2') {
       platform.body.setSize(64, 32)
-    } else if (ran == 2) {
+    } else if (gameOptions.platformWidth[ran] == 'block3') {
       platform.body.setSize(96, 32)
-    } else if (ran == 3) {
+    } else if (gameOptions.platformWidth[ran] == 'block4') {
+      this.placeSpark(platform.x, platform.y, ranHeight)
       platform.body.setSize(128, 32)
     }
 
   }
-  placeCoin(x, y) {
+  placeCoin(x, y, height) {
     //console.log('create coin ' + x + ', ' + y)
-    const enemyHeight = [25, 50, 100];
+    const enemyHeight = [25, 50, 100];// enemyHeight[Math.floor(Math.random() * 3)]
     let coin;
-    coin = this.coins.create(x, y - enemyHeight[Math.floor(Math.random() * 3)], 'tiles', 24, true, true)
+    coin = this.coins.create(x, y - (height - 48), 'tiles', 24, true, true)
       .setOrigin(0, 1);
     coin.setImmovable();
     if (!this.firstMove) {
@@ -187,6 +215,21 @@ class Verticle extends Phaser.Scene {
     }
 
     console.log(coin)
+  }
+  placeSpark(x, y, height) {
+    //console.log('create coin ' + x + ', ' + y)
+    const enemyHeight = [25, 50, 100];// enemyHeight[Math.floor(Math.random() * 3)]
+    let spark;
+    spark = this.sparks.create(x, y - 16, 'spark-up', 0, true, true)
+      .setOrigin(0, 1);
+    spark.setImmovable();
+    spark.play('spark-anim')
+    spark.body.setSize(16, 16).setOffset(8, 16)
+    if (!this.firstMove) {
+      spark.setVelocityY(-gameOptions.platformSpeed);
+    }
+
+
   }
   getLowestPlatform() {
     let lowestPlatform = 0;
@@ -209,6 +252,8 @@ class Verticle extends Phaser.Scene {
 
         // ... recycle the platform
         this.positionPlatform(platform);
+        this.score++
+        this.sText.setText(this.score)
       }
     }, this);
     this.coins.getChildren().forEach(function (coin) {
@@ -346,6 +391,7 @@ class Verticle extends Phaser.Scene {
                 this.firstMove = false;
                 this.platformGroup.setVelocityY(-gameOptions.platformSpeed);
                 this.coins.setVelocityY(-gameOptions.platformSpeed);
+                this.sparks.setVelocityY(-gameOptions.platformSpeed);
               }
               if (myMovePointer.x < startX) this.moveLeft(tmpAcceleration);
               if (myMovePointer.x > startX) this.moveRight(tmpAcceleration);

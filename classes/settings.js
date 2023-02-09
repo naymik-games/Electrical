@@ -297,20 +297,20 @@ let rooms =
     {
       id: 3,
       roomKey: 'level1-3', //json
-      leftID: 1,//room id connected to room
-      rightID: null,
+      leftID: null,//room id connected to room
+      rightID: 4,
       upID: null,
-      downID: null,
-      doorConfig: 12
+      downID: 8,
+      doorConfig: 18
     },
     {
       id: 4,
       roomKey: 'level1-4', //json DONE
-      leftID: 1,//room id connected to room
+      leftID: 3,//room id connected to room
       rightID: null,
       upID: null,
       downID: null,
-      doorConfig: 12
+      doorConfig: 5
     },
     {
       id: 5,
@@ -333,15 +333,15 @@ let rooms =
     {
       id: 7,
       roomKey: 'level1-7', //json DONE
-      leftID: 1,//room id connected to room
+      leftID: null,//room id connected to room
       rightID: null,
-      upID: null,
-      downID: null,
+      upID: 2,
+      downID: 12,
       doorConfig: 10
     },
     {
       id: 8,
-      roomKey: 'level1-8', //json DONE
+      roomKey: 'level1-8', //json
       leftID: 1,//room id connected to room
       rightID: null,
       upID: null,
@@ -350,7 +350,52 @@ let rooms =
     },
     {
       id: 9,
-      roomKey: 'level1-9', //json DONE
+      roomKey: 'level1-9', //json
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 10,
+      roomKey: 'level1-10', //json
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 11,
+      roomKey: 'level1-11', //json
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 12,
+      roomKey: 'level1-12', //json DONE
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: 7,
+      downID: null,
+      doorConfig: 2
+    },
+    {
+      id: 13,
+      roomKey: 'level1-13', //json
+      leftID: 1,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 12
+    },
+    {
+      id: 14,
+      roomKey: 'level1-14', //json
       leftID: 1,//room id connected to room
       rightID: null,
       upID: null,
