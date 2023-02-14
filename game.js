@@ -1641,7 +1641,7 @@ class playGame extends Phaser.Scene {
     if (this.blockSpark) {
       this.blockSpark = false
       Phaser.Actions.Call(blockSparks.getChildren(), child => {
-        console.log(child.kind)
+        //console.log(child.kind)
         if (child.kind == 'block') {
           // child.setAlpha(0)
           child.anims.pause()

@@ -201,7 +201,7 @@ class UI extends Phaser.Scene {
 
     var tallyBG = this.add.image(300, yOffset - 15, 'blank').setTint(0x046307).setAlpha(1).setOrigin(.5, 0)
     tallyBG.displayWidth = 600
-    tallyBG.displayHeight = (worlds[currentWorld].cols * dotSize) + 30
+    tallyBG.displayHeight = (worlds[currentWorld].rows * dotSize) + 30
     this.tallyContainer.add(tallyBG)
 
 

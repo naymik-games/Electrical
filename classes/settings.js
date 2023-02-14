@@ -314,21 +314,21 @@ let rooms =
     },
     {
       id: 5,
-      roomKey: 'level1-5', //json 
-      leftID: 1,//room id connected to room
-      rightID: null,
+      roomKey: 'level1-5', //DONE
+      leftID: null,//room id connected to room
+      rightID: 6,
       upID: null,
-      downID: null,
-      doorConfig: 12
+      downID: 10,
+      doorConfig: 18
     },
     {
       id: 6,
       roomKey: 'level1-6', //jso
-      leftID: 1,//room id connected to room
+      leftID: 5,//room id connected to room
       rightID: null,
       upID: null,
       downID: null,
-      doorConfig: 12
+      doorConfig: 5
     },
     {
       id: 7,
@@ -342,29 +342,29 @@ let rooms =
     {
       id: 8,
       roomKey: 'level1-8', //json
-      leftID: 1,//room id connected to room
-      rightID: null,
-      upID: null,
+      leftID: null,//room id connected to room
+      rightID: 9,
+      upID: 3,
       downID: null,
-      doorConfig: 12
+      doorConfig: 19
     },
     {
       id: 9,
       roomKey: 'level1-9', //json
-      leftID: 1,//room id connected to room
+      leftID: 8,//room id connected to room
       rightID: null,
       upID: null,
-      downID: null,
-      doorConfig: 12
+      downID: 14,
+      doorConfig: 16
     },
     {
       id: 10,
       roomKey: 'level1-10', //json
-      leftID: 1,//room id connected to room
-      rightID: null,
-      upID: null,
-      downID: null,
-      doorConfig: 12
+      leftID: null,//room id connected to room
+      rightID: 11,
+      upID: 5,
+      downID: 15,
+      doorConfig: 15
     },
     {
       id: 11,
@@ -373,7 +373,7 @@ let rooms =
       rightID: null,
       upID: null,
       downID: null,
-      doorConfig: 12
+      doorConfig: 8
     },
     {
       id: 12,
@@ -391,7 +391,7 @@ let rooms =
       rightID: null,
       upID: null,
       downID: null,
-      doorConfig: 12
+      doorConfig: 16
     },
     {
       id: 14,
@@ -400,7 +400,187 @@ let rooms =
       rightID: null,
       upID: null,
       downID: null,
+      doorConfig: 10
+    },
+    {
+      id: 15,
+      roomKey: 'level1-15', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 19
+    },
+    {
+      id: 16,
+      roomKey: 'level1-16', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 5
+    },
+    {
+      id: 17,
+      roomKey: 'level1-17', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 10
+    },
+    {
+      id: 18,
+      roomKey: 'level1-18', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 19
+    },
+    {
+      id: 19,
+      roomKey: 'level1-19', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 17
+    },
+    {
+      id: 20,
+      roomKey: 'level1-20', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 18
+    },
+    {
+      id: 21,
+      roomKey: 'level1-21', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 5
+    },
+    {
+      id: 22,
+      roomKey: 'level1-22', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 19
+    },
+    {
+      id: 23,
+      roomKey: 'level1-23', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 8
+    },
+    {
+      id: 24,
+      roomKey: 'level1-24', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 16
+    },
+    {
+      id: 25,
+      roomKey: 'level1-25', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 10
+    },
+    {
+      id: 26,
+      roomKey: 'level1-26', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 4
+    },
+    {
+      id: 27,
+      roomKey: 'level1-27', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
       doorConfig: 12
+    },
+    {
+      id: 28,
+      roomKey: 'level1-28', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 5
+    },
+    {
+      id: 29,
+      roomKey: 'level1-29', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 10
+    },
+    {
+      id: 30,
+      roomKey: 'level1-30', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 19
+    },
+    {
+      id: 31,
+      roomKey: 'level1-31', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 8
+    },
+    {
+      id: 32,
+      roomKey: 'level1-32', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 13
+    },
+    {
+      id: 33,
+      roomKey: 'level1-33', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 8
+    },
+    {
+      id: 34,
+      roomKey: 'level1-34', //json
+      leftID: null,//room id connected to room
+      rightID: null,
+      upID: null,
+      downID: null,
+      doorConfig: 17
     }
   ]
 }

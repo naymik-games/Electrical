@@ -1,5 +1,5 @@
 let gameOptions = {
-
+  direction: 'up',
   // first platform vertical position. 0 = top of the screen, 1 = bottom of the screen
   firstPlatformPosition: 2 / 10,
 
@@ -36,6 +36,11 @@ class Verticle extends Phaser.Scene {
     this.load.image('block4', 'assets/sprites/block4.png');
   }
   create() {
+    if (gameOptions.direction == 'up') {
+      gameOptions.platformSpeed = 100
+    } else {
+      gameOptions.platformSpeed = -100
+    }
     this.cameras.main.setBackgroundColor(0x161616);
     // this.cameras.main.setZoom(1.5)
     console.log('verticle')
@@ -211,7 +216,7 @@ class Verticle extends Phaser.Scene {
       .setOrigin(0, 1);
     coin.setImmovable();
     if (!this.firstMove) {
-      coin.setVelocityY(-gameOptions.platformSpeed);
+      coin.setVelocityY(gameOptions.platformSpeed);
     }
 
     console.log(coin)
@@ -231,10 +236,19 @@ class Verticle extends Phaser.Scene {
 
 
   }
+  getHighestPlatform() {
+    let highestPlatform = game.config.height;
+    this.platformGroup.getChildren().forEach(function (platform) {
+      highestPlatform = Math.min(lowestPlatform, platform.y);
+
+    });
+    return highestPlatform;
+  }
   getLowestPlatform() {
     let lowestPlatform = 0;
     this.platformGroup.getChildren().forEach(function (platform) {
       lowestPlatform = Math.max(lowestPlatform, platform.y);
+
     });
     return lowestPlatform;
   }
@@ -389,9 +403,9 @@ class Verticle extends Phaser.Scene {
               });
               if (this.firstMove) {
                 this.firstMove = false;
-                this.platformGroup.setVelocityY(-gameOptions.platformSpeed);
-                this.coins.setVelocityY(-gameOptions.platformSpeed);
-                this.sparks.setVelocityY(-gameOptions.platformSpeed);
+                this.platformGroup.setVelocityY(gameOptions.platformSpeed);
+                this.coins.setVelocityY(gameOptions.platformSpeed);
+                this.sparks.setVelocityY(gameOptions.platformSpeed);
               }
               if (myMovePointer.x < startX) this.moveLeft(tmpAcceleration);
               if (myMovePointer.x > startX) this.moveRight(tmpAcceleration);
