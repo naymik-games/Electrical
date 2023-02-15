@@ -38,8 +38,10 @@ class Verticle extends Phaser.Scene {
   create() {
     if (gameOptions.direction == 'up') {
       gameOptions.platformSpeed = 100
+      gameOptions.firstPlatformPosition = 8 / 10
     } else {
       gameOptions.platformSpeed = -100
+      gameOptions.firstPlatformPosition = 2 / 10
     }
     this.cameras.main.setBackgroundColor(0x161616);
     // this.cameras.main.setZoom(1.5)
@@ -84,7 +86,12 @@ class Verticle extends Phaser.Scene {
       platform.setImmovable(true);
 
       // position the platform
-      this.positionPlatform(platform);
+
+      if (gameOptions.direction == 'up') {
+        this.positionPlatformUp(platform);
+      } else {
+        this.positionPlatform(platform);
+      }
     }
 
 
@@ -181,6 +188,41 @@ class Verticle extends Phaser.Scene {
 
     this.buildTouchSlider();
   }
+  positionPlatformUp(platform) {
+    var ranHeight = this.randomValue(gameOptions.platformVerticalDistanceRange)
+    // vertical position
+    platform.y = this.getHighestPlatform() - ranHeight;
+
+    // horizontal position
+    platform.x = game.config.width / 2 + this.randomValue(gameOptions.platformHorizontalDistanceRange) * Phaser.Math.RND.sign();
+    if (Phaser.Math.Between(0, 1) == 0) {
+      this.placeCoin(platform.x, platform.y, ranHeight)
+    }
+
+    // platform width
+    var ran = Phaser.Math.Between(0, gameOptions.platformWidth.length - 1)
+    // gameOptions.platformWidth[ran]
+    platform.setTexture(gameOptions.platformWidth[ran])
+    if (gameOptions.platformWidth[ran] == 'block1') {
+      platform.body.setSize(32, 32)
+    } else if (gameOptions.platformWidth[ran] == 'block2') {
+      platform.body.setSize(64, 32)
+    } else if (gameOptions.platformWidth[ran] == 'block3') {
+      platform.body.setSize(96, 32)
+    } else if (gameOptions.platformWidth[ran] == 'block4') {
+      this.placeSpark(platform.x, platform.y, ranHeight)
+      platform.body.setSize(128, 32)
+    }
+
+  }
+  getHighestPlatform() {
+    let highestPlatform = game.config.height;
+    this.platformGroup.getChildren().forEach(function (platform) {
+      highestPlatform = Math.min(highestPlatform, platform.y);
+
+    });
+    return highestPlatform;
+  }
   positionPlatform(platform) {
     var ranHeight = this.randomValue(gameOptions.platformVerticalDistanceRange)
     // vertical position
@@ -207,6 +249,15 @@ class Verticle extends Phaser.Scene {
       platform.body.setSize(128, 32)
     }
 
+  }
+
+  getLowestPlatform() {
+    let lowestPlatform = 0;
+    this.platformGroup.getChildren().forEach(function (platform) {
+      lowestPlatform = Math.min(lowestPlatform, platform.y);
+
+    });
+    return lowestPlatform;
   }
   placeCoin(x, y, height) {
     //console.log('create coin ' + x + ', ' + y)
@@ -236,22 +287,7 @@ class Verticle extends Phaser.Scene {
 
 
   }
-  getHighestPlatform() {
-    let highestPlatform = game.config.height;
-    this.platformGroup.getChildren().forEach(function (platform) {
-      highestPlatform = Math.min(lowestPlatform, platform.y);
 
-    });
-    return highestPlatform;
-  }
-  getLowestPlatform() {
-    let lowestPlatform = 0;
-    this.platformGroup.getChildren().forEach(function (platform) {
-      lowestPlatform = Math.max(lowestPlatform, platform.y);
-
-    });
-    return lowestPlatform;
-  }
   randomValue(a) {
     return Phaser.Math.Between(a[0], a[1]);
   }
@@ -259,17 +295,41 @@ class Verticle extends Phaser.Scene {
   update(time, delta) {
     if (!this.isGameRunning) { return; }
 
-    this.platformGroup.getChildren().forEach(function (platform) {
 
-      // if a platform leaves the stage to the upper side...
-      if (platform.getBounds().bottom < 0) {
 
-        // ... recycle the platform
-        this.positionPlatform(platform);
-        this.score++
-        this.sText.setText(this.score)
-      }
-    }, this);
+    if (gameOptions.direction == 'up') {
+      this.platformGroup.getChildren().forEach(function (platform) {
+
+        // if a platform leaves the stage to the upper side...
+        if (platform.getBounds().top > game.config.height) {
+
+          // ... recycle the platform
+
+          this.positionPlatformUp(platform);
+
+          this.score++
+          this.sText.setText(this.score)
+        }
+      }, this);
+    } else {
+      this.platformGroup.getChildren().forEach(function (platform) {
+
+        // if a platform leaves the stage to the upper side...
+        if (platform.getBounds().bottom < 0) {
+
+          // ... recycle the platform
+
+          this.positionPlatform(platform);
+
+          this.score++
+          this.sText.setText(this.score)
+        }
+      }, this);
+    }
+
+
+
+
     this.coins.getChildren().forEach(function (coin) {
 
       // if a platform leaves the stage to the upper side...

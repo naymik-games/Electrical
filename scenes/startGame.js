@@ -5,6 +5,7 @@ class startGame extends Phaser.Scene {
   preload() {
     //this.load.bitmapFont('atari', 'assets/fonts/atari-smooth.png', 'assets/fonts/atari-smooth.xml');
     // this.load.bitmapFont('atari', 'assets/fonts/Lato_0.png', 'assets/fonts/lato.xml');
+    this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);
 
   }
   create() {
@@ -23,9 +24,51 @@ class startGame extends Phaser.Scene {
     this.title = this.add.image(game.config.width / 2, 100, 'logotitle')
     //  var title = this.add.bitmapText(game.config.width / 2, 100, 'topaz', 'Electrical', 100).setOrigin(.5).setTint(0xc76210);
 
-    this.startTime = this.add.bitmapText(game.config.width / 2, 275, 'topaz', text, 50).setOrigin(.5).setTint(0xffffff);
+    this.startTime = this.add.bitmapText(game.config.width / 2, 250, 'topaz', text, 50).setOrigin(.5).setTint(0xffffff);
     this.startTime.setInteractive();
     this.startTime.on('pointerdown', this.clickHandler, this);
+
+    // currentRoom = playerData.currentRoom
+    //  currentWorld = playerData.currentWorld
+
+    var text = '('
+    text += 'World ' + playerData.currentWorld
+    text += ', Level ' + playerData.currentRoom
+    text += ')'
+    this.gameState = this.add.bitmapText(game.config.width / 2, 310, 'topaz', text, 30).setOrigin(.5).setTint(0xE7EFD5);
+
+
+    this.jumpText = this.add.bitmapText(game.config.width / 2 - 100, 400, 'topaz', 'Jump To:', 30).setOrigin(.5).setTint(0xffffff);
+    this.jumpText.setInteractive();
+    this.jumpText.on('pointerdown', this.clickHandler4, this);
+
+    this.worldText = this.add.rexInputText(400, 405, 10, 10, {
+      id: 'worldinput',
+      type: 'number',
+      text: '0',
+      fontSize: '36px',
+      color: '#E7EFD5',
+    })
+      .resize(100, 100)
+      .setOrigin(0.5)
+    /*  .on('textchange', function (inputText) {
+       printText.text = inputText.text;
+     }) */
+
+    this.levelText = this.add.rexInputText(450, 405, 10, 10, {
+      id: 'levelinput',
+      type: 'number',
+      text: '0',
+      fontSize: '36px',
+      color: '#E7EFD5',
+    })
+      .resize(100, 100)
+      .setOrigin(0.5)
+
+
+
+
+
 
     this.startRunner = this.add.bitmapText(game.config.width / 2, 875, 'topaz', 'Runner', 50).setOrigin(.5).setTint(0xffffff);
     this.startRunner.setInteractive();
@@ -73,6 +116,7 @@ class startGame extends Phaser.Scene {
     currentRoom = playerData.currentRoom
     currentWorld = playerData.currentWorld
 
+
     var t = this.tweens.add({
       targets: this.tempPlayer,
       x: game.config.width + 96,
@@ -87,5 +131,26 @@ class startGame extends Phaser.Scene {
     }, this)
 
   }
+  clickHandler4() {
 
+
+    currentRoom = parseInt(this.levelText.text)
+    currentWorld = parseInt(this.worldText.text)
+    // currentRoom = playerData.currentRoom
+    //  currentWorld = playerData.currentWorld
+
+    var t = this.tweens.add({
+      targets: this.tempPlayer,
+      x: game.config.width + 96,
+      duration: 400
+    })
+    // this.tempPlayer.amims.stop('player-idle')
+    this.tempPlayer.anims.play("player-run", true).once('animationcomplete', function () {
+      console.log('current room ' + currentRoom + ', current world ' + currentWorld)
+
+      this.scene.start('playGame');
+      this.scene.launch('UI');
+    }, this)
+
+  }
 }

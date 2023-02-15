@@ -19,6 +19,9 @@ window.onload = function () {
         debug: false
       }
     },
+    dom: {
+      createContainer: true
+    },
     backgroundColor: 0x222222,
     scene: [preloadGame, startGame, playGame, Runner, Verticle, UI]
   }
